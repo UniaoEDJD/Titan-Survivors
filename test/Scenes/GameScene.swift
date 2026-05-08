@@ -14,6 +14,7 @@ class GameScene: SKScene {
     var joystick: VirtualJoystick!
     var objectPool: ObjectPool!
     
+    let gameManager = GameManager()
     let playerSpeed: CGFloat = 5.0
     
     override func didMove(to view: SKView) {
