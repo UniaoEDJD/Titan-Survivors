@@ -13,6 +13,7 @@ class GameScene: SKScene {
     var cameraNode: SKCameraNode!
     var joystick: VirtualJoystick!
     var objectPool: ObjectPool!
+    var spawnManager: SpawnerManager!
     
     let gameManager = GameManager()
     let playerSpeed: CGFloat = 5.0
@@ -23,6 +24,7 @@ class GameScene: SKScene {
         setupCamera()
         setupJoystick()
         objectPool = ObjectPool(capacity: 300, scene: self)
+        spawnManager = SpawnerManager(objectPool: objectPool)
         let newEnemy = objectPool.spawn(at: CGPoint(x: 100, y: 100))
     }
     
@@ -56,8 +58,16 @@ class GameScene: SKScene {
             // ATENÇÃO: Adicionar à câmara para ficar sempre visível!
             cameraNode.addChild(joystick)
     }
-    
+    var lastTime : TimeInterval = 0
     override func update(_ currentTime: TimeInterval) {
+        if lastTime == 0 { lastTime = currentTime }
+        let delta_time = currentTime - lastTime
+        lastTime = currentTime
+        
+        gameManager.update(dt: delta_time)
+        if gameManager.currentState == .playing {
+            spawnManager.update(dt: delta_time, runTime: gameManager.runTime, playerPos: player.position)
+        }
         // 1. Atualizar a posição do jogador com base no joystick
         if joystick.velocity != .zero {
             player.position.x += joystick.velocity.x * playerSpeed

@@ -26,7 +26,7 @@ class GameManager{
     var onGameOver: (() -> Void)?
     var onVictory: (() -> Void)?
     
-    func update(dt: TimeInterval)
+    func update(dt: TimeInterval) //run inside gamescene update
     {
         guard currentState == .playing else { return }
         
