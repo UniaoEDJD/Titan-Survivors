@@ -23,9 +23,9 @@ class GameScene: SKScene {
         setupPlayer()
         setupCamera()
         setupJoystick()
-        objectPool = ObjectPool(capacity: 300, scene: self)
+        
+        objectPool = ObjectPool(capacity: 300, scene: self, player: player)
         spawnManager = SpawnerManager(objectPool: objectPool)
-        let newEnemy = objectPool.spawn(at: CGPoint(x: 100, y: 100))
     }
     
     func setupBackground() {
@@ -75,6 +75,9 @@ class GameScene: SKScene {
         }
         // 2. A câmara persegue a posição do jogador
         cameraNode.position = player.position
+        for enemy in objectPool.allEnemies {
+            enemy.update()
+        }
     }
     
     override func didChangeSize(_ oldSize: CGSize) {
