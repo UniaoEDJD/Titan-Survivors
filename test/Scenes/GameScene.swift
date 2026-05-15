@@ -15,9 +15,11 @@ class GameScene: SKScene {
     var objectPool: ObjectPool!
     var spawnManager: SpawnerManager!
     
+    let upgradeManager = UpgradeManager()
     let gameManager = GameManager()
     let playerSpeed: CGFloat = 5.0
     
+    var requestLevelUpUI: (([UpgradeOption]) -> Void)?
     override func didMove(to view: SKView) {
         setupBackground()
         setupPlayer()
@@ -25,8 +27,26 @@ class GameScene: SKScene {
         setupJoystick()
         objectPool = ObjectPool(capacity: 300, scene: self)
         spawnManager = SpawnerManager(objectPool: objectPool)
-        let newEnemy = objectPool.spawn(at: CGPoint(x: 100, y: 100))
+        
+        gameManager.onLevelUp = { [weak self] in
+                    guard let self = self else { return }
+                    
+                    // 1. Pause the game engine completely
+                    self.isPaused = true
+                    
+                    // 2. Ask the UpgradeManager to roll 3 random cards
+                    let draftedCards = self.upgradeManager.rollUpgrades(count: 3)
+                    
+                    // 3. Send those cards up to the ViewController to display
+                    self.requestLevelUpUI?(draftedCards)
+                }
     }
+    
+    func resumeGame(afterPicking upgrade: UpgradeOption) {
+            upgradeManager.applyUpgrade(upgrade)
+            gameManager.resumeLevelUp()
+            self.isPaused = false
+        }
     
     func setupBackground() {
         let background = SKSpriteNode(color: SKColor.darkGray, size: CGSize(width: 3000, height: 3000))
