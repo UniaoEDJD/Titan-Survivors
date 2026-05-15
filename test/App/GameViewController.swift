@@ -11,7 +11,6 @@ import GameplayKit
 
 class GameViewController: UIViewController {
 
-    // This MUST be up here at the class level, outside of viewDidLoad!
     private var levelUpView: LevelUpView!
 
     override func viewDidLoad() {
@@ -38,16 +37,47 @@ class GameViewController: UIViewController {
             view.ignoresSiblingOrder = true
             view.showsFPS = true
             view.showsNodeCount = true
+            
+            // ADD THIS HERE: Hook up the dev cheat button to the scene
+            setupDevCheatButton(for: scene)
         }
     }
     
+    // MARK: - Dev Cheats
+    private func setupDevCheatButton(for scene: GameScene) {
+        let cheatBtn = UIButton(type: .system)
+        cheatBtn.setTitle("+100 XP", for: .normal)
+        cheatBtn.backgroundColor = .systemRed
+        cheatBtn.setTitleColor(.white, for: .normal)
+        cheatBtn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+        cheatBtn.layer.cornerRadius = 8
+        cheatBtn.translatesAutoresizingMaskIntoConstraints = false
+        
+        // This action tells the scene's gameManager to add XP directly!
+        let action = UIAction { _ in
+            print("🛠️ DEV CHEAT TRIGGERED: +100 XP")
+            scene.gameManager.gainXp(xpAmount: 100)
+        }
+        cheatBtn.addAction(action, for: .touchUpInside)
+        
+        view.addSubview(cheatBtn)
+        
+        // Pin it to the top right corner
+        NSLayoutConstraint.activate([
+            cheatBtn.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            cheatBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            cheatBtn.widthAnchor.constraint(equalToConstant: 100),
+            cheatBtn.heightAnchor.constraint(equalToConstant: 40)
+        ])
+    }
+    
+    // MARK: - Level Up UI
     private func setupLevelUpView() {
         levelUpView = LevelUpView()
         levelUpView.isHidden = true
         levelUpView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(levelUpView)
         
-        // Make it cover the entire screen
         NSLayoutConstraint.activate([
             levelUpView.topAnchor.constraint(equalTo: view.topAnchor),
             levelUpView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -59,7 +89,6 @@ class GameViewController: UIViewController {
     private func showLevelUpScreen(with options: [UpgradeOption]) {
         levelUpView.displayUpgrades(options)
         
-        // Simple fade-in animation
         levelUpView.alpha = 0
         levelUpView.isHidden = false
         UIView.animate(withDuration: 0.3) {

@@ -46,7 +46,9 @@ class GameScene: SKScene {
     func resumeGame(afterPicking upgrade: UpgradeOption) {
             upgradeManager.applyUpgrade(upgrade)
             gameManager.resumeLevelUp()
+        if gameManager.currentState == .playing{
             self.isPaused = false
+            }
         }
     
     func setupBackground() {
@@ -100,6 +102,8 @@ class GameScene: SKScene {
             enemy.update()
         }
     }
+    
+
     
     override func didChangeSize(_ oldSize: CGSize) {
             super.didChangeSize(oldSize)

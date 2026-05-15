@@ -54,7 +54,7 @@ class UpgradeManager
     {
         var draftedUpgrades: [UpgradeOption] = []
         
-        let selectedIDs = availableUpgradeIDs
+        let selectedIDs = availableUpgradeIDs.shuffled().prefix(count)
         
         for id in selectedIDs {
             let rarity = rollRarity()
@@ -92,7 +92,7 @@ class UpgradeManager
             let finalPerc = basePerc * rarity.multiplier
             let displayPerc = Int(finalPerc * 100)
             
-            return UpgradeOption(id: id, title: "% HP", description: "Increase HP by \(displayPerc)", rarity: rarity, IconName: "icon_hp")
+            return UpgradeOption(id: id, title: "% HP", description: "Increase HP by \(displayPerc)%", rarity: rarity, IconName: "icon_hp")
             {
                 self.healthMult += finalPerc
             }
@@ -102,24 +102,25 @@ class UpgradeManager
             let finalSpd = baseSpd * rarity.multiplier
             let displaySpd = Int(finalSpd * 100)
             
-            return UpgradeOption(id: id, title: "Boots", description: "Increases speed by \(displaySpd)", rarity: rarity, IconName: "icon_spd")
+            return UpgradeOption(id: id, title: "Boots", description: "Increases speed by \(displaySpd)%", rarity: rarity, IconName: "icon_spd")
             {
                 self.playerSpeedMult += finalSpd
             }
         case "mag_up":
             let baseMag = Double.random(in: 5...10)
             let finalMag = (baseMag * rarity.multiplier)
+            let displayMag = Int(finalMag)
             
-            return UpgradeOption(id: id, title: "Larger Bag", description: "Increases XP Pickup range by \(finalMag)", rarity: rarity, IconName: "icon_mag")
+            return UpgradeOption(id: id, title: "Larger Bag", description: "Increases XP Pickup range by \(displayMag)", rarity: rarity, IconName: "icon_mag")
             {
                 self.MagnetRadius += finalMag
             }
         default:
-            var baseDmg = Double.random(in: 0.10...0.25)
-            var finalDmg = baseDmg * rarity.multiplier
-            var displayDmg = Int(finalDmg * 100)
+            let baseDmg = Double.random(in: 0.10...0.25)
+            let finalDmg = baseDmg * rarity.multiplier
+            let displayDmg = Int(finalDmg * 100)
             
-            return UpgradeOption(id: id, title: "Reinforced Blades", description: "Increase damage by \(finalDmg)", rarity: rarity, IconName: "icon_dmg")
+            return UpgradeOption(id: id, title: "Reinforced Blades", description: "Increase damage by \(displayDmg)%", rarity: rarity, IconName: "icon_dmg")
             {
                 self.GlobalDamageMult += finalDmg
             }
