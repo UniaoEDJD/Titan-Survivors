@@ -7,19 +7,22 @@
 import SpriteKit
 
 class ObjectPool{
-    private var pool: [SKSpriteNode] = []
+    private var pool: [EnemyNode] = []
     
-    init(capacity: Int, scene: SKScene)
+    private weak var player: SKSpriteNode?
+    
+    init(capacity: Int, scene: SKScene, player: SKSpriteNode)
     {
+        self.player = player
+        
         for _ in 0..<capacity {
-            let enemy = SKSpriteNode(color: .red, size: CGSize(width: 20, height: 20))
+            let enemy = NormalTitan()
             enemy.name = "enemy"
             
-            enemy.physicsBody = SKPhysicsBody(rectangleOf: enemy.size)
+            enemy.isHidden = true
             enemy.physicsBody?.isDynamic = false
             
-            enemy.isHidden = true
-            enemy.physicsBody?.categoryBitMask = 0
+            enemy.position = CGPoint(x: 10000, y: 10000)
             
             scene.addChild(enemy)
             
@@ -27,24 +30,24 @@ class ObjectPool{
         }
     }
     
-    func spawn(at position: CGPoint) -> SKSpriteNode? {
-        if let availableEnemy = pool.first(where: {$0.isHidden}) {
-            
-            availableEnemy.position = position
-            availableEnemy.isHidden = false
-            
-            availableEnemy.physicsBody?.categoryBitMask = 1
-            
-            return availableEnemy
-            
+    func spawn(at position: CGPoint) -> EnemyNode? {
+            if let availableEnemy = pool.first(where: { $0.isHidden }), let target = player {
+                
+                availableEnemy.spawn(at: position, target: target)
+                
+                return availableEnemy
+            }
+            return nil
         }
-        return nil
+    
+    func despawn(_ node: EnemyNode) {
+        node.isHidden = true
+        node.physicsBody?.isDynamic = false
+        node.removeAllActions()
     }
     
-    func despawn(_ node: SKSpriteNode) {
-        node.isHidden = true
-        node.physicsBody?.categoryBitMask = 0
-        node.removeAllActions()
+    var allEnemies: [EnemyNode] {
+        return pool
     }
 }
 

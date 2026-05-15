@@ -25,7 +25,8 @@ class GameScene: SKScene {
         setupPlayer()
         setupCamera()
         setupJoystick()
-        objectPool = ObjectPool(capacity: 300, scene: self)
+        
+        objectPool = ObjectPool(capacity: 300, scene: self, player: player)
         spawnManager = SpawnerManager(objectPool: objectPool)
         
         gameManager.onLevelUp = { [weak self] in
@@ -95,6 +96,9 @@ class GameScene: SKScene {
         }
         // 2. A câmara persegue a posição do jogador
         cameraNode.position = player.position
+        for enemy in objectPool.allEnemies {
+            enemy.update()
+        }
     }
     
     override func didChangeSize(_ oldSize: CGSize) {

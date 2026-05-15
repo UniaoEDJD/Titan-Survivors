@@ -1,7 +1,7 @@
-//
-//  PhysicsCategories.swift
-//  test
-//
-//  Created by Gonçalo Araújo on 08/05/2026.
-//
+import Foundation
 
+struct PhysicsCategories{
+    static let none: UInt32 = 0
+    static let player: UInt32 = 0b1
+    static let enemy: UInt32 = 0b10
+}
