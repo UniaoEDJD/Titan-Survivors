@@ -9,7 +9,7 @@ import SpriteKit
 import GameplayKit
 
 class GameScene: SKScene {
-    var player: SKSpriteNode!
+    var player: PlayerNode!
     var cameraNode: SKCameraNode!
     var joystick: VirtualJoystick!
     var objectPool: ObjectPool!
@@ -59,7 +59,7 @@ class GameScene: SKScene {
     
     func setupPlayer() {
             // Criar o jogador (um quadrado azul por agora)
-            player = SKSpriteNode(color: .systemBlue, size: CGSize(width: 40, height: 40))
+        player = PlayerNode(upgradeManager: upgradeManager, gameManager: gameManager)
             player.position = .zero
             addChild(player)
         }
@@ -93,8 +93,7 @@ class GameScene: SKScene {
         }
         // 1. Atualizar a posição do jogador com base no joystick
         if joystick.velocity != .zero {
-            player.position.x += joystick.velocity.x * playerSpeed
-            player.position.y += joystick.velocity.y * playerSpeed
+            player.move(with: joystick.velocity)
         }
         // 2. A câmara persegue a posição do jogador
         cameraNode.position = player.position
@@ -102,9 +101,7 @@ class GameScene: SKScene {
             enemy.update()
         }
     }
-    
-
-    
+        
     override func didChangeSize(_ oldSize: CGSize) {
             super.didChangeSize(oldSize)
             
