@@ -10,9 +10,12 @@ class EnemyNode: SKSpriteNode{
     weak var targetPlayer: SKSpriteNode?
     
     var onDeath: ((CGPoint) -> Void)?
-
+    private var baseColor: UIColor
+    
     override init(texture: SKTexture?, color: UIColor, size: CGSize) {
+        self.baseColor = color
         super.init(texture: texture, color: color, size: size)
+        self.name = "enemy"
         setupPhysics()
     }
     
@@ -56,6 +59,13 @@ class EnemyNode: SKSpriteNode{
     
     func takeDamage(_ amount: CGFloat){
         currentHealth -= amount
+        
+        let flash = SKAction.sequence([
+                    SKAction.colorize(with: .white, colorBlendFactor: 1.0, duration: 0.05),
+                    SKAction.colorize(with: baseColor, colorBlendFactor: 1.0, duration: 0.05)
+                ])
+        
+        self.run(flash, withKey: "damageFlash")
         
         if currentHealth <= 0 {
             die()
