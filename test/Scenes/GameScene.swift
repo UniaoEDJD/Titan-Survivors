@@ -18,6 +18,7 @@ class GameScene: SKScene {
     let upgradeManager = UpgradeManager()
     let gameManager = GameManager()
     let playerSpeed: CGFloat = 5.0
+    var activeWeapons: [Weapon] = []
     
     var requestLevelUpUI: (([UpgradeOption]) -> Void)?
     override func didMove(to view: SKView) {
@@ -41,6 +42,7 @@ class GameScene: SKScene {
                     // 3. Send those cards up to the ViewController to display
                     self.requestLevelUpUI?(draftedCards)
                 }
+        activeWeapons.append(DualBlades())
     }
     
     func resumeGame(afterPicking upgrade: UpgradeOption) {
@@ -90,6 +92,10 @@ class GameScene: SKScene {
         gameManager.update(dt: delta_time)
         if gameManager.currentState == .playing {
             spawnManager.update(dt: delta_time, runTime: gameManager.runTime, playerPos: player.position)
+            
+            for weapon in activeWeapons{
+                weapon.update(dt: delta_time, player: player, scene: self, globalDamageMult: upgradeManager.GlobalDamageMult)
+            }
         }
         // 1. Atualizar a posição do jogador com base no joystick
         if joystick.velocity != .zero {

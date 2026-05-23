@@ -2,7 +2,7 @@
 //  UpgradeManager.swift
 //  test
 //
-//  Created by Gonçalo Araújo on 08/05/2026.
+//  Created by Gonçalo Araújo on 08/05/2026. <-- a nigglet
 //
 import Foundation
 
