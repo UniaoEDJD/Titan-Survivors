@@ -1,14 +1,7 @@
-//
-//  GameScene.swift
-//  test
-//
-//  Created by Gonçalo Araújo on 06/05/2026.
-//
-
 import SpriteKit
 import GameplayKit
 
-class GameScene: SKScene {
+class GameScene: SKScene, SKPhysicsContactDelegate {
     var player: PlayerNode!
     var cameraNode: SKCameraNode!
     var joystick: VirtualJoystick!
@@ -20,7 +13,9 @@ class GameScene: SKScene {
     let playerSpeed: CGFloat = 5.0
     
     var requestLevelUpUI: (([UpgradeOption]) -> Void)?
+    
     override func didMove(to view: SKView) {
+        self.physicsWorld.contactDelegate = self
         setupBackground()
         setupPlayer()
         setupCamera()
@@ -44,11 +39,9 @@ class GameScene: SKScene {
     }
     
     func resumeGame(afterPicking upgrade: UpgradeOption) {
-            upgradeManager.applyUpgrade(upgrade)
-            gameManager.resumeLevelUp()
-        if gameManager.currentState == .playing{
-            self.isPaused = false
-            }
+        upgradeManager.applyUpgrade(upgrade)
+        self.scene?.isPaused = false
+        gameManager.resumeLevelUp()
         }
     
     func setupBackground() {
@@ -60,9 +53,9 @@ class GameScene: SKScene {
     func setupPlayer() {
             // Criar o jogador (um quadrado azul por agora)
         player = PlayerNode(upgradeManager: upgradeManager, gameManager: gameManager)
-            player.position = .zero
-            addChild(player)
-        }
+        player.position = .zero
+        addChild(player)
+    }
         
     func setupCamera() {
             cameraNode = SKCameraNode()
@@ -81,7 +74,9 @@ class GameScene: SKScene {
             // ATENÇÃO: Adicionar à câmara para ficar sempre visível!
             cameraNode.addChild(joystick)
     }
+    
     var lastTime : TimeInterval = 0
+    
     override func update(_ currentTime: TimeInterval) {
         if lastTime == 0 { lastTime = currentTime }
         let delta_time = currentTime - lastTime
@@ -101,6 +96,32 @@ class GameScene: SKScene {
             enemy.update()
         }
     }
+    
+    func didBegin(_ contact: SKPhysicsContact){
+        let bitMaskA = contact.bodyA.categoryBitMask
+        let bitMaskB = contact.bodyB.categoryBitMask
+        let collision = bitMaskA | bitMaskB
+        
+        if collision == PhysicsCategories.player | PhysicsCategories.expGem {
+            let gemNode = (bitMaskA == PhysicsCategories.expGem) ? contact.bodyA.node : contact.bodyB.node
+            
+            if let gem = gemNode as? ExperienceNode{
+                gameManager.gainXp(xpAmount: gem.xpValue)
+                
+                gem.run(SKAction.sequence([
+                    SKAction.scale(to: 0, duration: 0.1)
+                    ,SKAction.removeFromParent()
+                ]))
+            }
+        }
+        if collision == PhysicsCategories.player | PhysicsCategories.enemy {
+            let enemyNode = (bitMaskA == PhysicsCategories.enemy) ? contact.bodyA.node : contact.bodyB.node
+            
+            if let enemy = enemyNode as? EnemyNode{
+                player.takeDamage(Int(enemy.damage))
+            }
+        }
+    }
         
     override func didChangeSize(_ oldSize: CGSize) {
             super.didChangeSize(oldSize)
@@ -112,6 +133,12 @@ class GameScene: SKScene {
                 let xPos = -(size.width / 2) + 120
                 let yPos = -(size.height / 2) + 100
                 joystick.position = CGPoint(x: xPos, y: yPos)
-            }
         }
+    }
+    
+    func killAllActiveEnemies() {
+        for enemy in objectPool.allEnemies where !enemy.isHidden {
+            enemy.takeDamage(10000)
+        }
+    }
 }

@@ -45,31 +45,55 @@ class GameViewController: UIViewController {
     
     // MARK: - Dev Cheats
     private func setupDevCheatButton(for scene: GameScene) {
-        let cheatBtn = UIButton(type: .system)
-        cheatBtn.setTitle("+100 XP", for: .normal)
-        cheatBtn.backgroundColor = .systemRed
-        cheatBtn.setTitleColor(.white, for: .normal)
-        cheatBtn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
-        cheatBtn.layer.cornerRadius = 8
-        cheatBtn.translatesAutoresizingMaskIntoConstraints = false
-        
-        // This action tells the scene's gameManager to add XP directly!
-        let action = UIAction { _ in
-            print("🛠️ DEV CHEAT TRIGGERED: +100 XP")
-            scene.gameManager.gainXp(xpAmount: 100)
+            // 1. Botão +100 XP
+            let xpBtn = UIButton(type: .system)
+            xpBtn.setTitle("+100 XP", for: .normal)
+            xpBtn.backgroundColor = .systemRed
+            xpBtn.setTitleColor(.white, for: .normal)
+            xpBtn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+            xpBtn.layer.cornerRadius = 8
+            xpBtn.translatesAutoresizingMaskIntoConstraints = false
+            
+            let xpAction = UIAction { _ in
+                print("🛠️ DEV CHEAT: +100 XP")
+                scene.gameManager.gainXp(xpAmount: 100)
+            }
+            xpBtn.addAction(xpAction, for: .touchUpInside)
+            
+            // 2. Botão Kill All
+            let killBtn = UIButton(type: .system)
+            killBtn.setTitle("Kill All", for: .normal)
+            killBtn.backgroundColor = .systemPurple // Cor diferente para distinguir
+            killBtn.setTitleColor(.white, for: .normal)
+            killBtn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+            killBtn.layer.cornerRadius = 8
+            killBtn.translatesAutoresizingMaskIntoConstraints = false
+            
+            let killAction = UIAction { _ in
+                print("🛠️ DEV CHEAT: KILL ALL ENEMIES")
+                scene.killAllActiveEnemies()
+            }
+            killBtn.addAction(killAction, for: .touchUpInside)
+            
+            // Adicionar à View
+            view.addSubview(xpBtn)
+            view.addSubview(killBtn)
+            
+            // Constraints para ficarem no canto superior direito, um debaixo do outro
+            NSLayoutConstraint.activate([
+                // Botão XP no topo
+                xpBtn.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+                xpBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                xpBtn.widthAnchor.constraint(equalToConstant: 100),
+                xpBtn.heightAnchor.constraint(equalToConstant: 40),
+                
+                // Botão Kill All logo abaixo do botão de XP
+                killBtn.topAnchor.constraint(equalTo: xpBtn.bottomAnchor, constant: 10),
+                killBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                killBtn.widthAnchor.constraint(equalToConstant: 100),
+                killBtn.heightAnchor.constraint(equalToConstant: 40)
+            ])
         }
-        cheatBtn.addAction(action, for: .touchUpInside)
-        
-        view.addSubview(cheatBtn)
-        
-        // Pin it to the top right corner
-        NSLayoutConstraint.activate([
-            cheatBtn.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            cheatBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-            cheatBtn.widthAnchor.constraint(equalToConstant: 100),
-            cheatBtn.heightAnchor.constraint(equalToConstant: 40)
-        ])
-    }
     
     // MARK: - Level Up UI
     private func setupLevelUpView() {
