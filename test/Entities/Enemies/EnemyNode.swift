@@ -8,6 +8,8 @@ class EnemyNode: SKSpriteNode{
     var damage: CGFloat = 10.0
     
     weak var targetPlayer: SKSpriteNode?
+    
+    var onDeath: ((CGPoint) -> Void)?
 
     override init(texture: SKTexture?, color: UIColor, size: CGSize) {
         super.init(texture: texture, color: color, size: size)
@@ -48,7 +50,6 @@ class EnemyNode: SKSpriteNode{
             // OTIMIZAÇÃO: A raiz quadrada (sqrt) é uma operação pesada.
             // Se apenas queres a direção, podes usar a função atan2
             let angle = atan2(dy, dx)
-            
             self.position.x += cos(angle) * movementSpeed
             self.position.y += sin(angle) * movementSpeed
         }
@@ -64,6 +65,9 @@ class EnemyNode: SKSpriteNode{
     private func die(){
         self.isHidden = true
         self.physicsBody?.isDynamic = false
+        
+        //aviso de morte e passa a posição de onde morreu
+        onDeath?(self.position)
     }
 }
 

@@ -1,14 +1,7 @@
-//
-//  ObjectPoolManager.swift
-//  test
-//
-//  Created by Gonçalo Araújo on 08/05/2026.
-//
 import SpriteKit
 
 class ObjectPool{
     private var pool: [EnemyNode] = []
-    
     private weak var player: SKSpriteNode?
     
     init(capacity: Int, scene: SKScene, player: SKSpriteNode)
@@ -21,20 +14,22 @@ class ObjectPool{
             
             enemy.isHidden = true
             enemy.physicsBody?.isDynamic = false
-            
             enemy.position = CGPoint(x: 10000, y: 10000)
             
+            //oq acontece quando morre? drop XP
+            enemy.onDeath = {[weak scene] dropPosition in
+                    let gem = ExperienceNode(value: 1)
+                gem.position = dropPosition
+                scene?.addChild(gem)
+            }
             scene.addChild(enemy)
-            
             pool.append(enemy)
         }
     }
     
     func spawn(at position: CGPoint) -> EnemyNode? {
             if let availableEnemy = pool.first(where: { $0.isHidden }), let target = player {
-                
                 availableEnemy.spawn(at: position, target: target)
-                
                 return availableEnemy
             }
             return nil
