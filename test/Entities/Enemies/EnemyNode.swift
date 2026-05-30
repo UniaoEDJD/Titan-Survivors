@@ -7,6 +7,8 @@ class EnemyNode: SKSpriteNode{
     var movementSpeed: CGFloat = 3.0
     var damage: CGFloat = 10.0
     
+    var xpReward: Int = 1
+    
     weak var targetPlayer: SKSpriteNode?
     
     var onDeath: ((CGPoint) -> Void)?
