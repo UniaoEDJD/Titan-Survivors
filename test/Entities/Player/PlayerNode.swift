@@ -20,6 +20,11 @@ class PlayerNode : SKSpriteNode {
         return CGFloat(upgradeManager.MagnetRadius)
     }
     
+    var isDashing: Bool = false
+    var timeLastDash: TimeInterval = 3.0
+    var dashCooldown: TimeInterval = 3.0
+    
+    
     init(upgradeManager: UpgradeManager, gameManager: GameManager) {
         self.upgradeManager = upgradeManager
         self.gameManager = gameManager
@@ -71,5 +76,36 @@ class PlayerNode : SKSpriteNode {
         self.physicsBody?.isDynamic = false
         self.isHidden = true
         gameManager?.triggerGameOver()
+    }
+    
+    func performDash(joystickVel: CGPoint)
+    {
+        guard !isDashing, timeLastDash >= dashCooldown else { return }
+        
+        let dashDir = joystickVel == .zero ? CGPoint(x: 1, y: 0) : joystickVel
+        
+        isDashing = true
+        timeLastDash = 0.0
+        
+        self.physicsBody?.contactTestBitMask = PhysicsCategories.none
+        
+        let dashDistance = 200.0
+        let moveX = dashDir.x * dashDistance
+        let moveY = dashDir.y * dashDistance
+        
+        let dashAction = SKAction.moveBy(x: moveX, y: moveY, duration: 0.25)
+        dashAction.timingMode = .easeOut
+        
+        let stretch = SKAction.scaleX(to: 1.5, y: 0.5, duration: 0.1)
+        let unstretch = SKAction.scaleX(to: 1.0, y: 1.0, duration: 0.15)
+        let visualEffect = SKAction.sequence([stretch, unstretch])
+        
+        let finishDash = SKAction.run { [weak self] in
+            self?.isDashing = false
+            self?.physicsBody?.contactTestBitMask = PhysicsCategories.enemy
+        }
+        self.run(SKAction.group([dashAction, visualEffect]))
+        self.run(SKAction.sequence([SKAction.wait(forDuration: 0.25), finishDash]))
+
     }
 }

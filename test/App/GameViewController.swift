@@ -40,6 +40,8 @@ class GameViewController: UIViewController {
             
             // ADD THIS HERE: Hook up the dev cheat button to the scene
             setupDevCheatButton(for: scene)
+            
+            setupDashButton(for: scene)
         }
     }
     
@@ -127,4 +129,34 @@ class GameViewController: UIViewController {
     override var prefersStatusBarHidden: Bool {
         return true
     }
+    
+    private func setupDashButton(for scene: GameScene) {
+            let dashBtn = UIButton(type: .system)
+            
+            // You can replace this with a cool ODM gear icon later!
+            dashBtn.setTitle("DASH", for: .normal)
+            dashBtn.backgroundColor = UIColor.white.withAlphaComponent(0.2)
+            dashBtn.setTitleColor(.white, for: .normal)
+            dashBtn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
+            dashBtn.layer.cornerRadius = 35 // Makes it a perfect circle if size is 70x70
+            dashBtn.layer.borderWidth = 2
+            dashBtn.layer.borderColor = UIColor.cyan.cgColor
+            dashBtn.translatesAutoresizingMaskIntoConstraints = false
+            
+            let action = UIAction { _ in
+                // Tell the player to dash in the direction the joystick is pointing!
+                scene.player.performDash(joystickVel: scene.joystick.velocity)
+            }
+            dashBtn.addAction(action, for: .touchDown) // Use touchDown so it fires the instantly
+            
+            view.addSubview(dashBtn)
+            
+            // Pin it to the bottom right
+            NSLayoutConstraint.activate([
+                dashBtn.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+                dashBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -40),
+                dashBtn.widthAnchor.constraint(equalToConstant: 70),
+                dashBtn.heightAnchor.constraint(equalToConstant: 70)
+            ])
+        }
 }

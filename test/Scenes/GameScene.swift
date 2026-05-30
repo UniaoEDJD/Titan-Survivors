@@ -83,6 +83,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if lastTime == 0 { lastTime = currentTime }
         let delta_time = currentTime - lastTime
         lastTime = currentTime
+        player.timeLastDash += delta_time
         
         gameManager.update(dt: delta_time)
         if gameManager.currentState == .playing {
@@ -93,9 +94,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         // 1. Atualizar a posição do jogador com base no joystick
-        if joystick.velocity != .zero {
+        if joystick.velocity != .zero && !player.isDashing {
             player.move(with: joystick.velocity)
         }
+        
+
+        
         // 2. A câmara persegue a posição do jogador
         cameraNode.position = player.position
         for enemy in objectPool.allEnemies {
