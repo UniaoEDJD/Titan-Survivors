@@ -89,8 +89,8 @@ class ThunderSpears: Weapon {
         blast.run(SKAction.sequence([expand, fade, SKAction.removeFromParent()]))
         
         // 2. PURE MATH AoE DAMAGE (No physics pushing!)
-        let allEnemies = scene.children.filter { $0.name == "enemy" && !$0.isHidden }
-        
+        let allEnemies = scene.children.compactMap { $0 as? EnemyNode }.filter { !$0.isHidden }
+
         for enemy in allEnemies {
             let dx = enemy.position.x - position.x
             let dy = enemy.position.y - position.y
