@@ -4,17 +4,25 @@ class ThunderSpears: Weapon {
     var cooldown: TimeInterval = 3.0 // Fires every 3 seconds
     var damage: Double = 1500.0 // Massive damage
     var attackRange: Double = 400.0 // Ranged!
+    weak var upgradeManager: UpgradeManager?
     
     private var timeSinceLastAttack: TimeInterval = 0
+
+    init(upgradeManager: UpgradeManager? = nil) {
+        self.upgradeManager = upgradeManager
+    }
     
     func update(dt: TimeInterval, player: SKNode, scene: SKNode, globalDamageMult: Double) {
         timeSinceLastAttack += dt
+
+        let state = upgradeManager?.weaponStates["thunderspear"] ?? WeaponUpgradeState()
+        let effectiveCooldown = cooldown * state.cooldownMult
         
-        if timeSinceLastAttack >= cooldown {
+        if timeSinceLastAttack >= effectiveCooldown {
             if let gameScene = scene as? SKScene {
                 // Find an enemy to shoot at
                 if let target = getTargetEnemy(to: player, in: gameScene) {
-                    fireSpear(from: player, targetPos: target.position, scene: gameScene, multiplier: globalDamageMult)
+                    fireSpear(from: player, targetPos: target.position, scene: gameScene, multiplier: globalDamageMult, extraShots: state.extraShots)
                     timeSinceLastAttack = 0
                 }
             }
@@ -39,30 +47,39 @@ class ThunderSpears: Weapon {
         return targetEnemy
     }
     
-    private func fireSpear(from player: SKNode, targetPos: CGPoint, scene: SKScene, multiplier: Double) {
-        // 1. Draw the Spear
-        let spear = SKShapeNode(rectOf: CGSize(width: 20, height: 4), cornerRadius: 2)
-        spear.fillColor = .gray
-        spear.strokeColor = .orange
-        spear.position = player.position
-        
-        // Point the spear at the target
-        let dx = targetPos.x - player.position.x
-        let dy = targetPos.y - player.position.y
-        spear.zRotation = atan2(dy, dx)
-        
-        scene.addChild(spear)
-        
-        // 2. Animate the flight
-        let flyAction = SKAction.move(to: targetPos, duration: 0.4) // Takes 0.4s to hit
-        
-        // 3. When it lands, trigger the explosion!
-        let explodeAction = SKAction.run { [weak self] in
-            self?.triggerExplosion(at: targetPos, scene: scene, multiplier: multiplier)
+    private func fireSpear(from player: SKNode, targetPos: CGPoint, scene: SKScene, multiplier: Double, extraShots: Int) {
+        let shots = max(1, extraShots + 1)
+
+        let dxToTarget = targetPos.x - player.position.x
+        let dyToTarget = targetPos.y - player.position.y
+        let distanceToTarget = sqrt(dxToTarget * dxToTarget + dyToTarget * dyToTarget)
+        let flyDistance = distanceToTarget
+
+        for index in 0..<shots {
+            let spear = SKShapeNode(rectOf: CGSize(width: 20, height: 4), cornerRadius: 2)
+            spear.fillColor = .gray
+            spear.strokeColor = .orange
+            spear.position = player.position
+
+            let offset = CGFloat(index) - CGFloat(shots - 1) / 2
+            let dx = targetPos.x - player.position.x
+            let dy = targetPos.y - player.position.y
+            let baseAngle = atan2(dy, dx)
+            let angle = baseAngle + offset * 0.12
+            spear.zRotation = angle
+
+            scene.addChild(spear)
+
+            let flyTarget = CGPoint(x: player.position.x + cos(angle) * flyDistance, y: player.position.y + sin(angle) * flyDistance)
+            let duration = TimeInterval(flyDistance / 800.0)
+            let flyAction = SKAction.move(to: flyTarget, duration: duration)
+
+            let explodeAction = SKAction.run { [weak self] in
+                self?.triggerExplosion(at: flyTarget, scene: scene, multiplier: multiplier)
+            }
+
+            spear.run(SKAction.sequence([flyAction, explodeAction, SKAction.removeFromParent()]))
         }
-        
-        // Fly, Explode, then delete the spear
-        spear.run(SKAction.sequence([flyAction, explodeAction, SKAction.removeFromParent()]))
     }
     
     private func triggerExplosion(at position: CGPoint, scene: SKScene, multiplier: Double) {

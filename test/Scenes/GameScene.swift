@@ -38,7 +38,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     // 3. Send those cards up to the ViewController to display
                     self.requestLevelUpUI?(draftedCards)
                 }
-        activeWeapons.append(DualBlades())
+        activeWeapons.append(DualBlades(upgradeManager: upgradeManager))
         
         scatterPowerUp(weaponID: "thunderspear", amount: 5, around: .zero, maxRadius: 1500)
     }
@@ -72,6 +72,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         healthBar = HealthBarNode()
         healthBar.zPosition = 100
+        let xPos = -(size.width / 2) + 40
+        let yPos = (size.height / 2) - 40
+        healthBar.position = CGPoint(x: xPos, y: yPos)
         cameraNode.addChild(healthBar)
     }
         
@@ -138,7 +141,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let gemNode = (bitMaskA == PhysicsCategories.expGem) ? contact.bodyA.node : contact.bodyB.node
             
             if let gem = gemNode as? ExperienceNode{
-                gameManager.gainXp(xpAmount: gem.xpValue)
+                let scaledXP = Int(Double(gem.xpValue) * upgradeManager.xpMultiplier)
+                gameManager.gainXp(xpAmount: scaledXP)
                 
                 gem.run(SKAction.sequence([
                     SKAction.scale(to: 0, duration: 0.1)
@@ -159,7 +163,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if let pickup = pickupNode as? WeaponPickupNode {
                 let acquiredID = pickup.weaponID
                 if acquiredID == "thunderspear"{
-                    activeWeapons.append(ThunderSpears())
+                    activeWeapons.append(ThunderSpears(upgradeManager: upgradeManager))
                 }
                 
                 self.enumerateChildNodes(withName: "pickup_\(acquiredID)") { matchingNode, _ in
