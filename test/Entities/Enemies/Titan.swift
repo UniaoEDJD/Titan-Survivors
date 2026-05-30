@@ -8,10 +8,6 @@ class NormalTitan: EnemyNode {
         self.maxHealth = 1000.0
         self.movementSpeed = 2.0
         self.damage = 1.0
-        
-        self.physicsBody = SKPhysicsBody(circleOfRadius: 15)
-        self.physicsBody?.affectedByGravity = false
-        self.physicsBody?.allowsRotation = false
     }
     
     required init?(coder aDecoder: NSCoder) {
