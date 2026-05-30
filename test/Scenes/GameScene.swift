@@ -22,7 +22,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupCamera()
         setupJoystick()
         
-        objectPool = ObjectPool(capacity: 300, scene: self, player: player)
+        objectPool = ObjectPool(scene: self, player: player)
         spawnManager = SpawnerManager(objectPool: objectPool)
         
         gameManager.onLevelUp = { [weak self] in
