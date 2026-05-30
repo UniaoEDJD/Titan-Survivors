@@ -106,6 +106,5 @@ class PlayerNode : SKSpriteNode {
         }
         self.run(SKAction.group([dashAction, visualEffect]))
         self.run(SKAction.sequence([SKAction.wait(forDuration: 0.25), finishDash]))
-
     }
 }
