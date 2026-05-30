@@ -29,7 +29,7 @@ class ThunderSpears: Weapon {
     }
     
     private func getTargetEnemy(to player: SKNode, in scene: SKScene) -> SKNode? {
-        let activeEnemies = scene.children.filter { $0.name == "enemy" && !$0.isHidden }
+        let activeEnemies = scene.children.filter { $0 as? EnemyNode && !$0.isHidden }
         var targetEnemy: SKNode? = nil
         var shortestDistance: CGFloat = attackRange
         
@@ -97,8 +97,8 @@ class ThunderSpears: Weapon {
             let distance = sqrt((dx * dx) + (dy * dy))
             
             if distance <= explosionRadius {
-                if let enemyNode = enemy as? EnemyNode {
-                    enemyNode.takeDamage(finalDamage)
+                 
+                    enemy.takeDamage(finalDamage)
                     
                     // Knockback away from the center of the explosion
                     let pushDistance = max(distance, 1.0)
@@ -108,8 +108,8 @@ class ThunderSpears: Weapon {
                     
                     let pushAction = SKAction.moveBy(x: nx * knockbackForce, y: ny * knockbackForce, duration: 0.15)
                     pushAction.timingMode = .easeOut
-                    enemyNode.run(pushAction)
-                }
+                    enemy.run(pushAction)
+                
             }
         }
     }
