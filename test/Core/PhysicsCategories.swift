@@ -6,4 +6,5 @@ struct PhysicsCategories{
     static let enemy: UInt32 = 0b10
     static let expGem: UInt32 = 0b100
     static let weapon: UInt32 = 0b1000
+    static let powerUp: UInt32 = 0b10000
 }
