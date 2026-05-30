@@ -29,7 +29,7 @@ class ThunderSpears: Weapon {
     }
     
     private func getTargetEnemy(to player: SKNode, in scene: SKScene) -> SKNode? {
-        let activeEnemies = scene.children.filter { $0 as? EnemyNode && !$0.isHidden }
+        let activeEnemies = scene.children.compactMap { $0 as? EnemyNode }.filter { !$0.isHidden }
         var targetEnemy: SKNode? = nil
         var shortestDistance: CGFloat = attackRange
         
