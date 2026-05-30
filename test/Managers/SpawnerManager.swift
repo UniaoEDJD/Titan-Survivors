@@ -4,6 +4,7 @@ import SpriteKit
 class SpawnerManager{
     
     private weak var objectPool : ObjectPool?
+    private weak var scene: SKScene?
     
     private var lastSpawn : TimeInterval = 0
     private var currentSpawnInterval : TimeInterval = 2.0
@@ -11,19 +12,28 @@ class SpawnerManager{
     
     private var spawnChance: [(type: TitanType, chance: Int)] = []
     
-    init (objectPool: ObjectPool)
+    private var lastHealSpawn: TimeInterval = 0
+    private var healSpawnInterval: TimeInterval = 20.0
+    
+    init (objectPool: ObjectPool, scene: SKScene)
     {
         self.objectPool = objectPool
+        self.scene = scene
     }
     
     func update(dt: TimeInterval, runTime: TimeInterval, playerPos: CGPoint){
         updateDifficulty(runTime: runTime)
         
         lastSpawn += dt
-        
         if lastSpawn >= currentSpawnInterval {
             spawnEnemy(around: playerPos)
             lastSpawn = 0
+        }
+        
+        lastHealSpawn += dt
+        if lastHealSpawn >= healSpawnInterval {
+            spawnHealPickup(around: playerPos)
+            lastHealSpawn = 0
         }
     }
     
@@ -86,6 +96,21 @@ class SpawnerManager{
             _ = objectPool?.spawn(type: selectedType, at: spawnPoint)
         }
         print("Spawned enemy")
+    }
+    
+    private func spawnHealPickup(around playerPos: CGPoint)
+    {
+        let randomAngle = CGFloat.random(in: 0...(2 * .pi))
+            
+        let spawnX = playerPos.x + (cos(randomAngle) * spawnRadius)
+        let spawnY = playerPos.y + (sin(randomAngle) * spawnRadius)
+            
+        let healNode = HealthPickupNode(healAmount: 200)
+        healNode.position = CGPoint(x: spawnX, y: spawnY)
+        healNode.zPosition = 1
+            
+        scene?.addChild(healNode)
+        print("❤️ Item de cura plantado no mapa!")
     }
     
     private func rollEnemyType() -> TitanType{

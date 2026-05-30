@@ -5,6 +5,8 @@ class PlayerNode : SKSpriteNode {
     
     weak var gameManager: GameManager?
     
+    var onHealthChange: ((Int, Int) -> Void)?
+    
     private let baseSpeed: CGFloat = 5.0
     var currentHealth: Int
     
@@ -61,6 +63,7 @@ class PlayerNode : SKSpriteNode {
     
     func takeDamage(_ amount: Int){
         currentHealth -= amount
+        onHealthChange?(currentHealth, maxHealth)
         
         let flash = SKAction.sequence([
             SKAction.colorize(with: .red, colorBlendFactor: 0.8, duration: 0.1),
@@ -106,5 +109,20 @@ class PlayerNode : SKSpriteNode {
         }
         self.run(SKAction.group([dashAction, visualEffect]))
         self.run(SKAction.sequence([SKAction.wait(forDuration: 0.25), finishDash]))
+    }
+    
+    func heal(_ amount: Int) {
+        currentHealth += amount
+        onHealthChange?(currentHealth, maxHealth)
+            
+        if currentHealth > maxHealth {
+            currentHealth = maxHealth
+        }
+        print("❤️ Vida recuperada! HP Atual: \(currentHealth)/\(maxHealth)")
+        let flashGreen = SKAction.sequence([
+            SKAction.colorize(with: .green, colorBlendFactor: 0.6, duration: 0.1),
+            SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.1)
+        ])
+        self.run(flashGreen)
     }
 }

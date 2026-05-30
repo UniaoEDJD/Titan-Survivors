@@ -14,6 +14,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var activeWeapons: [Weapon] = []
     
     var requestLevelUpUI: (([UpgradeOption]) -> Void)?
+    var healthBar: HealthBarNode!
     
     override func didMove(to view: SKView) {
         self.physicsWorld.contactDelegate = self
@@ -23,7 +24,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupJoystick()
         
         objectPool = ObjectPool(scene: self, player: player)
-        spawnManager = SpawnerManager(objectPool: objectPool)
+        spawnManager = SpawnerManager(objectPool: objectPool, scene: self)
         
         gameManager.onLevelUp = { [weak self] in
                     guard let self = self else { return }
@@ -55,16 +56,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupPlayer() {
-            // Criar o jogador (um quadrado azul por agora)
         player = PlayerNode(upgradeManager: upgradeManager, gameManager: gameManager)
         player.position = .zero
         addChild(player)
+        
+        player.onHealthChange = { [weak self] currentHP, maxHP in
+            self?.healthBar.updateHealth(current: currentHP, maxHealth: maxHP)
+        }
     }
         
     func setupCamera() {
-            cameraNode = SKCameraNode()
-            self.camera = cameraNode // Diz à Scene que esta é a câmara principal
-            addChild(cameraNode)
+        cameraNode = SKCameraNode()
+        self.camera = cameraNode // Diz à Scene que esta é a câmara principal
+        addChild(cameraNode)
+        
+        healthBar = HealthBarNode()
+        healthBar.zPosition = 100
+        cameraNode.addChild(healthBar)
     }
         
     func setupJoystick() {
@@ -120,7 +128,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    func didBegin(_ contact: SKPhysicsContact){
+    func didBegin(_ contact: SKPhysicsContact)
+    {
         let bitMaskA = contact.bodyA.categoryBitMask
         let bitMaskB = contact.bodyB.categoryBitMask
         let collision = bitMaskA | bitMaskB
@@ -160,18 +169,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         }
+        if collision == PhysicsCategories.player | PhysicsCategories.heal {
+                    let healNode = (bitMaskA == PhysicsCategories.heal) ? contact.bodyA.node : contact.bodyB.node
+                    
+                    if let heal = healNode as? HealthPickupNode {
+                        player.heal(heal.healAmount)
+                        
+                        heal.run(SKAction.sequence([
+                            SKAction.scale(to: 0, duration: 0.1),
+                            SKAction.removeFromParent()
+                        ]))
+                    }
+                }
     }
         
     override func didChangeSize(_ oldSize: CGSize) {
-            super.didChangeSize(oldSize)
-            
-            // Esta função é chamada automaticamente quando as dimensões do ecrã atualizam.
-            // O "if let" garante que só tentamos mover o joystick SE ele já tiver sido criado no didMove.
-            if let joystick = joystick {
-                // Aumentei um pouco o xPos para 120 para garantir que não fica escondido atrás da "notch" (entalhe) do iPhone
-                let xPos = -(size.width / 2) + 120
-                let yPos = -(size.height / 2) + 100
-                joystick.position = CGPoint(x: xPos, y: yPos)
+        super.didChangeSize(oldSize)
+        if let joystick = joystick
+        {
+            let xPos = -(size.width / 2) + 120
+            let yPos = -(size.height / 2) + 100
+            joystick.position = CGPoint(x: xPos, y: yPos)
+        }
+        if let healthBar = healthBar
+        {
+            let xPos = -(size.width / 2) + 40  // 40 pixels de margem da esquerda
+            let yPos = (size.height / 2) - 40  // 40 pixels de margem do topo
+            healthBar.position = CGPoint(x: xPos, y: yPos)
         }
     }
     

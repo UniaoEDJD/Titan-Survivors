@@ -1,9 +1,3 @@
-//
-//  WeaponPickupNode.swift
-//  test
-//
-//  Created by Tiago Miranda on 30/05/2026.
-//
 import SpriteKit
 
 

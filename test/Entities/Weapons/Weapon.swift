@@ -1,10 +1,3 @@
-//
-//  Weapon.swift
-//  test
-//
-//  Created by Gonçalo Araújo on 08/05/2026.
-//
-
 import SpriteKit
 
 protocol Weapon {
