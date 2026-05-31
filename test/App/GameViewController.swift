@@ -12,11 +12,19 @@ import GameplayKit
 class GameViewController: UIViewController {
 
     private var levelUpView: LevelUpView!
-
+    private var pauseMenuView: PauseMenuView!
+    
+    override func loadView()
+    {
+        self.view = SKView()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupLevelUpView()
+        setupPauseUI()
+        setupPauseButton()
         
         if let view = self.view as! SKView? {
             let scene = GameScene(size: view.bounds.size)
@@ -82,19 +90,19 @@ class GameViewController: UIViewController {
             view.addSubview(killBtn)
             
             // Constraints para ficarem no canto superior direito, um debaixo do outro
-            NSLayoutConstraint.activate([
-                // Botão XP no topo
-                xpBtn.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-                xpBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-                xpBtn.widthAnchor.constraint(equalToConstant: 100),
-                xpBtn.heightAnchor.constraint(equalToConstant: 40),
-                
-                // Botão Kill All logo abaixo do botão de XP
-                killBtn.topAnchor.constraint(equalTo: xpBtn.bottomAnchor, constant: 10),
-                killBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-                killBtn.widthAnchor.constraint(equalToConstant: 100),
-                killBtn.heightAnchor.constraint(equalToConstant: 40)
-            ])
+        NSLayoutConstraint.activate([
+                    // Botão XP agora tem um constant de 80 no topo para fugir do botão de pausa
+                    xpBtn.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
+                    xpBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                    xpBtn.widthAnchor.constraint(equalToConstant: 100),
+                    xpBtn.heightAnchor.constraint(equalToConstant: 40),
+                    
+                    // Botão Kill All logo abaixo do botão de XP
+                    killBtn.topAnchor.constraint(equalTo: xpBtn.bottomAnchor, constant: 10),
+                    killBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                    killBtn.widthAnchor.constraint(equalToConstant: 100),
+                    killBtn.heightAnchor.constraint(equalToConstant: 40)
+                ])
         }
     
     // MARK: - Level Up UI
@@ -158,5 +166,81 @@ class GameViewController: UIViewController {
                 dashBtn.widthAnchor.constraint(equalToConstant: 70),
                 dashBtn.heightAnchor.constraint(equalToConstant: 70)
             ])
+        }
+    
+    // MARK: - Pause UI
+        private func setupPauseUI() {
+            pauseMenuView = PauseMenuView()
+            pauseMenuView.isHidden = true
+            pauseMenuView.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(pauseMenuView)
+            
+            NSLayoutConstraint.activate([
+                pauseMenuView.topAnchor.constraint(equalTo: view.topAnchor),
+                pauseMenuView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                pauseMenuView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                pauseMenuView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            ])
+            
+            // Retomar Jogo
+            pauseMenuView.onResumeSelected = { [weak self] in
+                self?.togglePauseGame()
+            }
+            
+            // Sair para o Menu
+            pauseMenuView.onQuitSelected = { [weak self] in
+                // Fecha este ecrã e volta ao Main Menu automaticamente!
+                self?.dismiss(animated: true)
+            }
+        }
+        
+    private func setupPauseButton() {
+            let pauseBtn = UIButton(type: .system)
+            
+            // 1. Usar um ícone oficial e redondo da Apple, muito mais elegante
+            let config = UIImage.SymbolConfiguration(pointSize: 32, weight: .regular)
+            pauseBtn.setImage(UIImage(systemName: "pause.circle.fill", withConfiguration: config), for: .normal)
+            
+            // 2. Cores limpas (Branco puro) com uma sombra suave para destacar em qualquer fundo
+            pauseBtn.tintColor = .white
+            pauseBtn.layer.shadowColor = UIColor.black.cgColor
+            pauseBtn.layer.shadowOffset = CGSize(width: 0, height: 2)
+            pauseBtn.layer.shadowOpacity = 0.6
+            pauseBtn.layer.shadowRadius = 4
+            
+            pauseBtn.translatesAutoresizingMaskIntoConstraints = false
+            
+            pauseBtn.addAction(UIAction { [weak self] _ in
+                self?.togglePauseGame()
+            }, for: .touchUpInside)
+            
+            view.addSubview(pauseBtn)
+            
+            // 3. FIX: Colocar no Canto Superior DIREITO (trailingAnchor em vez de leadingAnchor)
+            NSLayoutConstraint.activate([
+                pauseBtn.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+                pauseBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                pauseBtn.widthAnchor.constraint(equalToConstant: 50),
+                pauseBtn.heightAnchor.constraint(equalToConstant: 50)
+            ])
+        }
+        
+        private func togglePauseGame() {
+            guard let skView = view as? SKView, let scene = skView.scene else { return }
+            
+            if scene.isPaused {
+                // RETOMAR
+                UIView.animate(withDuration: 0.2, animations: { self.pauseMenuView.alpha = 0 }) { _ in
+                    self.pauseMenuView.isHidden = true
+                    scene.isPaused = false
+                }
+            } else {
+                // PAUSAR
+                scene.isPaused = true
+                pauseMenuView.alpha = 0
+                pauseMenuView.isHidden = false
+                
+                UIView.animate(withDuration: 0.2) { self.pauseMenuView.alpha = 1 }
+            }
         }
 }
