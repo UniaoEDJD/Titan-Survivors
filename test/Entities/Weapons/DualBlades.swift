@@ -5,46 +5,66 @@ class DualBlades: Weapon {
     var cooldown: TimeInterval = 1.2
     var damage: Double = 670.0
     var attackRange: Double = 150.0
+    weak var upgradeManager: UpgradeManager?
     
     private var timeSinceLastAttack: TimeInterval = 0
+
+    init(upgradeManager: UpgradeManager? = nil) {
+        self.upgradeManager = upgradeManager
+    }
     
     func update(dt: TimeInterval, player: SKNode, scene: SKNode, globalDamageMult: Double) {
         timeSinceLastAttack += dt
+
+        let state = upgradeManager?.weaponStates["dualblades"] ?? WeaponUpgradeState()
+        let effectiveCooldown = cooldown * state.cooldownMult
         
-        if timeSinceLastAttack >= cooldown {
+        if timeSinceLastAttack >= effectiveCooldown {
             // Convertemos para SKScene para usar as funções auxiliares
             if let gameScene = scene as? SKScene {
-                if let target = getClosestEnemy(to: player, in: gameScene) {
-                    fireSlash(from: player, towards: target, scene: gameScene, multiplier: globalDamageMult)
+                let targets = getQuadrantedTargets(player: player, in: gameScene, count: 1 + state.extraShots)
+                if !targets.isEmpty {
+                    for target in targets {
+                        fireSlash(from: player, towards: target, scene: gameScene, multiplier: globalDamageMult)
+                    }
                     timeSinceLastAttack = 0 // Reset do cooldown apenas quando disparamos!
                 }
             }
         }
     }
     
-    func getClosestEnemy(to player: SKNode, in scene: SKScene) -> EnemyNode? {
-        
-        // A MAGIA ACONTECE AQUI:
-        // 1. O compactMap tenta converter todos os nodes da scene para EnemyNode.
-        // 2. Ignora tudo o que não for um EnemyNode (ex: Player, Gemas, UI).
-        // 3. O filter garante que só olhamos para os que estão vivos (não escondidos).
+    func getQuadrantedTargets(player: SKNode, in scene: SKScene, count: Int) -> [EnemyNode] {
         let activeEnemies = scene.children.compactMap { $0 as? EnemyNode }.filter { !$0.isHidden }
+        let sorted = activeEnemies.sorted {
+            let dx1 = $0.position.x - player.position.x
+            let dy1 = $0.position.y - player.position.y
+            let dx2 = $1.position.x - player.position.x
+            let dy2 = $1.position.y - player.position.y
+            return (dx1*dx1 + dy1*dy1) < (dx2*dx2 + dy2*dy2)
+        }
         
-        var closestEnemy: EnemyNode? = nil
-        var shortestDistance: CGFloat = attackRange
+        var targets = [EnemyNode]()
+        var quadrants = Set<Int>()
         
-        for enemy in activeEnemies {
-            let dx = player.position.x - enemy.position.x
-            let dy = player.position.y - enemy.position.y
+        for enemy in sorted {
+            let dx = enemy.position.x - player.position.x
+            let dy = enemy.position.y - player.position.y
+            let distSq = dx*dx + dy*dy
+            if distSq > attackRange * attackRange { continue }
             
-            let distance = sqrt((dx * dx) + (dy * dy))
+            let q: Int
+            if dx >= 0 && dy >= 0 { q = 1 }
+            else if dx < 0 && dy >= 0 { q = 2 }
+            else if dx < 0 && dy < 0 { q = 3 }
+            else { q = 4 }
             
-            if distance < shortestDistance {
-                shortestDistance = distance
-                closestEnemy = enemy
+            if !quadrants.contains(q) {
+                quadrants.insert(q)
+                targets.append(enemy)
+                if targets.count >= count { break }
             }
         }
-        return closestEnemy
+        return targets
     }
     
     private func fireSlash(from player: SKNode, towards target: SKNode, scene: SKScene, multiplier: Double) {

@@ -1,9 +1,3 @@
-//
-//  UpgradeManager.swift
-//  test
-//
-//  Created by Gonçalo Araújo on 08/05/2026. <-- a nigglet
-//
 import Foundation
 
 
@@ -15,6 +9,11 @@ struct UpgradeOption{
     let IconName: String
     
     let applyAffect: () -> Void
+}
+
+struct WeaponUpgradeState {
+    var cooldownMult: Double = 1.0
+    var extraShots: Int = 0
 }
 
 enum UpgradeRarity: String{
@@ -39,22 +38,35 @@ class UpgradeManager
     
     var playerSpeedMult: Double = 1.0
     var GlobalDamageMult: Double = 1.0
+    var xpMultiplier: Double = 1.0
     var MagnetRadius: Double = 50.0
     var maxHealth: Int = 1000
     var healthMult: Double = 1.0
+    var weaponStates: [String: WeaponUpgradeState] = [:]
     
     var effectiveMaxHealth: Int {
         return Int(Double(maxHealth) * healthMult)
     }
     
-    private let availableUpgradeIDs = ["flat_hp", "perc_hp", "spd_up", "dmg_up", "mag_up"]
-    
+    private let statUpgradeIDs = ["flat_hp", "perc_hp", "spd_up", "dmg_up", "xp_up"]
+    private let weaponUpgradeIDs = ["thunderspear_rate", "thunderspear_shots", "dualblades_rate", "dualblades_shots"]
     
     func rollUpgrades(count: Int = 3) -> [UpgradeOption]
     {
         var draftedUpgrades: [UpgradeOption] = []
+        var pool: [String] = []
         
-        let selectedIDs = availableUpgradeIDs.shuffled().prefix(count)
+        // Dilute weapon pool: add 10x stats for every 1x weapon upgrade
+        for _ in 0..<10 { pool.append(contentsOf: statUpgradeIDs) }
+        pool.append(contentsOf: weaponUpgradeIDs)
+        
+        var selectedIDs: [String] = []
+        for id in pool.shuffled() {
+            if !selectedIDs.contains(id) {
+                selectedIDs.append(id)
+                if selectedIDs.count == count { break }
+            }
+        }
         
         for id in selectedIDs {
             let rarity = rollRarity()
@@ -106,14 +118,52 @@ class UpgradeManager
             {
                 self.playerSpeedMult += finalSpd
             }
-        case "mag_up":
-            let baseMag = Double.random(in: 5...10)
-            let finalMag = (baseMag * rarity.multiplier)
-            let displayMag = Int(finalMag)
+        case "xp_up":
+            let baseXP = Double.random(in: 0.10...0.25)
+            let finalXP = baseXP * rarity.multiplier
+            let displayXP = Int(finalXP * 100)
             
-            return UpgradeOption(id: id, title: "Larger Bag", description: "Increases XP Pickup range by \(displayMag)", rarity: rarity, IconName: "icon_mag")
+            return UpgradeOption(id: id, title: "Wisdom", description: "Increases XP gained by \(displayXP)%", rarity: rarity, IconName: "icon_mag")
             {
-                self.MagnetRadius += finalMag
+                self.xpMultiplier += finalXP
+            }
+        case "thunderspear_rate":
+            let reduction = 0.08 * rarity.multiplier
+            let displayPct = Int(reduction * 100)
+
+            return UpgradeOption(id: id, title: "Spear Tempo", description: "Thunder spear cooldown -\(displayPct)%", rarity: rarity, IconName: "icon_dmg")
+            {
+                var state = self.weaponStates["thunderspear"] ?? WeaponUpgradeState()
+                state.cooldownMult = max(0.2, state.cooldownMult - reduction)
+                self.weaponStates["thunderspear"] = state
+            }
+        case "thunderspear_shots":
+            let extra = max(1, Int(rarity.multiplier.rounded(.down)))
+
+            return UpgradeOption(id: id, title: "Spear Volley", description: "Thunder spear fires +\(extra) spear(s)", rarity: rarity, IconName: "icon_dmg")
+            {
+                var state = self.weaponStates["thunderspear"] ?? WeaponUpgradeState()
+                state.extraShots = min(3, state.extraShots + extra)
+                self.weaponStates["thunderspear"] = state
+            }
+        case "dualblades_rate":
+            let reduction = 0.10 * rarity.multiplier
+            let displayPct = Int(reduction * 100)
+
+            return UpgradeOption(id: id, title: "Blade Tempo", description: "Dual blades cooldown -\(displayPct)%", rarity: rarity, IconName: "icon_dmg")
+            {
+                var state = self.weaponStates["dualblades"] ?? WeaponUpgradeState()
+                state.cooldownMult = max(0.2, state.cooldownMult - reduction)
+                self.weaponStates["dualblades"] = state
+            }
+        case "dualblades_shots":
+            let extra = max(1, Int(rarity.multiplier.rounded(.down)))
+
+            return UpgradeOption(id: id, title: "Blade Chain", description: "Dual blades hits +\(extra) enemy/ies", rarity: rarity, IconName: "icon_dmg")
+            {
+                var state = self.weaponStates["dualblades"] ?? WeaponUpgradeState()
+                state.extraShots = min(3, state.extraShots + extra)
+                self.weaponStates["dualblades"] = state
             }
         default:
             let baseDmg = Double.random(in: 0.10...0.25)
