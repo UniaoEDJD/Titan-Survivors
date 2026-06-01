@@ -73,6 +73,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
     func setupCamera() {
         cameraNode = SKCameraNode()
+        
+        cameraNode.zPosition = 1000
+        
         self.camera = cameraNode
         addChild(cameraNode)
         
@@ -119,6 +122,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             enemy.update()
         }
         
+        for node in self.children {
+            if let eventEnemy = node as? EnemyNode, (eventEnemy.name == "bossTitan" || eventEnemy.name == "colossalTitan") {
+                eventEnemy.update()
+            }
+        }
+        
         for node in self.children where node.name?.hasPrefix("pickup_") == true {
             let dx = player.position.x - node.position.x
             let dy = player.position.y - node.position.y
@@ -131,6 +140,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 node.position = CGPoint(x: player.position.x + (cos(newAngle) * newDistance), y: player.position.y + (sin(newAngle) * newDistance))
             }
         }
+        if let contactedBodies = player.physicsBody?.allContactedBodies() {
+                    for body in contactedBodies {
+                        if body.categoryBitMask & PhysicsCategories.enemy != 0 {
+                            if let enemy = body.node as? EnemyNode {
+                                player.takeDamage(Int(enemy.damage))
+                            }
+                        }
+                    }
+                }
     }
     
     func didBegin(_ contact: SKPhysicsContact)
@@ -150,13 +168,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     SKAction.scale(to: 0, duration: 0.1)
                     ,SKAction.removeFromParent()
                 ]))
-            }
-        }
-        if collision == PhysicsCategories.player | PhysicsCategories.enemy {
-            let enemyNode = (bitMaskA == PhysicsCategories.enemy) ? contact.bodyA.node : contact.bodyB.node
-            
-            if let enemy = enemyNode as? EnemyNode{
-                player.takeDamage(Int(enemy.damage))
             }
         }
         if collision == PhysicsCategories.player | PhysicsCategories.powerUp {

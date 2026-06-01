@@ -3,6 +3,8 @@ import SpriteKit
 class PlayerNode : SKSpriteNode {
     var upgradeManager: UpgradeManager
     
+    private var isInvincible: Bool = false
+    
     weak var gameManager: GameManager?
     
     var onHealthChange: ((Int, Int) -> Void)?
@@ -52,7 +54,7 @@ class PlayerNode : SKSpriteNode {
         
         self.physicsBody?.categoryBitMask = PhysicsCategories.player
         
-        self.physicsBody?.collisionBitMask = 0
+        self.physicsBody?.collisionBitMask = PhysicsCategories.solidObstacle
         self.physicsBody?.contactTestBitMask = PhysicsCategories.enemy
     }
     
@@ -62,6 +64,8 @@ class PlayerNode : SKSpriteNode {
     }
     
     func takeDamage(_ amount: Int){
+        guard !isInvincible, currentHealth > 0 else { return }
+        isInvincible = true
         currentHealth -= amount
         onHealthChange?(currentHealth, maxHealth)
         
@@ -69,7 +73,13 @@ class PlayerNode : SKSpriteNode {
             SKAction.colorize(with: .red, colorBlendFactor: 0.8, duration: 0.1),
             SKAction.colorize(withColorBlendFactor: 0, duration: 0.1)
         ])
-        self.run(flash)
+        
+        let resetFrames = SKAction.sequence([
+                    SKAction.wait(forDuration: 0.5),
+                    SKAction.run { [weak self] in self?.isInvincible = false }
+                ])
+        
+        self.run(SKAction.group([flash, resetFrames]))
         if currentHealth <= 0 {
             die()
         }

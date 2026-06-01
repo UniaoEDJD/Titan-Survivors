@@ -51,7 +51,7 @@ class ObjectPool{
             }
         }
     
-    func spawn(type: TitanType, at position: CGPoint) -> EnemyNode? {
+    func spawn(type: TitanType, at position: CGPoint, multiplier: CGFloat) -> EnemyNode? {
         let poolToSearch: [EnemyNode]
         
         switch type {
@@ -61,7 +61,7 @@ class ObjectPool{
         }
         
         if let availableEnemy = poolToSearch.first(where: { $0.isHidden }), let targe = player {
-            availableEnemy.spawn(at: position, target: targe)
+            availableEnemy.spawn(at: position, target: targe, multiplier: multiplier)
             return availableEnemy
         }
         return nil

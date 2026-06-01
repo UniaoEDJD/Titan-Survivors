@@ -15,6 +15,9 @@ class SpawnerManager{
     private var lastHealSpawn: TimeInterval = 0
     private var healSpawnInterval: TimeInterval = 20.0
     
+    private var boss1Spawned = false
+    private var boss2Spawned = false
+    
     init (objectPool: ObjectPool, scene: SKScene)
     {
         self.objectPool = objectPool
@@ -24,9 +27,11 @@ class SpawnerManager{
     func update(dt: TimeInterval, runTime: TimeInterval, playerPos: CGPoint){
         updateDifficulty(runTime: runTime)
         
+        let currentMult = 1.0 + CGFloat(runTime / 60.0) * 0.3
+        
         lastSpawn += dt
         if lastSpawn >= currentSpawnInterval {
-            spawnEnemy(around: playerPos)
+            spawnEnemy(around: playerPos, multiplier: currentMult)
             lastSpawn = 0
         }
         
@@ -74,7 +79,7 @@ class SpawnerManager{
         }
     }
     
-    private func spawnEnemy(around playerPos: CGPoint)
+    private func spawnEnemy(around playerPos: CGPoint, multiplier: CGFloat)
     {
         let randomAngle = CGFloat.random(in: 0...(2 * .pi))
         let spawnX = playerPos.x + (cos(randomAngle) * spawnRadius)
@@ -84,16 +89,16 @@ class SpawnerManager{
         let selectedType = rollEnemyType()
         
         if selectedType == .crawler {
-            _ = objectPool?.spawn(type: .crawler, at: spawnPoint)
+            _ = objectPool?.spawn(type: .crawler, at: spawnPoint, multiplier: multiplier)
             
             let offset1 = CGPoint(x: spawnPoint.x + 30, y: spawnPoint.y + 30)
             let offset2 = CGPoint(x: spawnPoint.x - 30, y: spawnPoint.y - 30)
             
-            _ = objectPool?.spawn(type: .crawler, at: offset1)
-            _ = objectPool?.spawn(type: .crawler, at: offset2)
+            _ = objectPool?.spawn(type: .crawler, at: offset1, multiplier: multiplier)
+            _ = objectPool?.spawn(type: .crawler, at: offset2, multiplier: multiplier)
         }
         else{
-            _ = objectPool?.spawn(type: selectedType, at: spawnPoint)
+            _ = objectPool?.spawn(type: selectedType, at: spawnPoint, multiplier: multiplier)
         }
         print("Spawned enemy")
     }
@@ -126,4 +131,31 @@ class SpawnerManager{
         }
         return .normal
     }
+    
+     func spawnBossEvent(around playerPos: CGPoint, multiplier: CGFloat) {
+            guard let scene = self.scene else { return }
+            
+            let target = scene.childNode(withName: "player") as? SKSpriteNode
+            
+            let boss = TitanBossNode(multiplier: multiplier)
+            boss.spawn(at: CGPoint(x: playerPos.x, y: playerPos.y + 800), target: target ?? SKSpriteNode(), multiplier: 1.0)
+            scene.addChild(boss)
+            
+            let colossalCount = 140 // Divides nicely into 360 degrees
+            let radiusX: CGFloat = 1600.0 // Wider on the X axis
+            let radiusY: CGFloat = 1000.0 // Shorter on the Y axis
+            
+            for i in 0..<colossalCount {
+                let angle = (CGFloat.pi * 2.0 / CGFloat(colossalCount)) * CGFloat(i)
+                let spawnX = playerPos.x + cos(angle) * radiusX
+                let spawnY = playerPos.y + sin(angle) * radiusY
+                
+                let colossal = ColossalTitan()
+                
+                colossal.trapCenter = playerPos
+                
+                colossal.spawn(at: CGPoint(x: spawnX, y: spawnY), target: target ?? SKSpriteNode(), multiplier: multiplier)
+                scene.addChild(colossal)
+            }
+        }
 }

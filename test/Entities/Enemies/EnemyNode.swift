@@ -2,6 +2,8 @@ import Foundation
 import SpriteKit
 
 class EnemyNode: SKSpriteNode{
+    var baseMaxHealth: CGFloat = 1000.0
+    var baseDamage: CGFloat = 10.0
     var maxHealth: CGFloat = 1000.0
     var currentHealth: CGFloat = 1000.0
     var movementSpeed: CGFloat = 3.0
@@ -41,9 +43,12 @@ class EnemyNode: SKSpriteNode{
         self.physicsBody?.mass = 1.0
     }
     
-    func spawn(at position: CGPoint, target: SKSpriteNode){
+    func spawn(at position: CGPoint, target: SKSpriteNode, multiplier:CGFloat = 1.0){
         self.position = position
         self.targetPlayer = target
+        
+        self.maxHealth = baseMaxHealth * multiplier
+        self.damage = baseDamage * multiplier
         self.currentHealth = maxHealth
         self.isHidden = false
         self.physicsBody?.isDynamic = true

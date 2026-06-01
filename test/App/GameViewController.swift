@@ -77,20 +77,43 @@ class GameViewController: UIViewController {
             }
             killBtn.addAction(killAction, for: .touchUpInside)
             
+            // --- NEW BOSS BUTTON ---
+            let bossBtn = UIButton(type: .system)
+            bossBtn.setTitle("Spawn Boss", for: .normal)
+            bossBtn.backgroundColor = .systemOrange
+            bossBtn.setTitleColor(.white, for: .normal)
+            bossBtn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+            bossBtn.layer.cornerRadius = 8
+            bossBtn.translatesAutoresizingMaskIntoConstraints = false
+            
+            let bossAction = UIAction { _ in
+                print("🛠️ DEV CHEAT: SPAWN BOSS EVENT")
+                // Spawns the boss with a 1.0 multiplier (base stats)
+                scene.spawnManager.spawnBossEvent(around: scene.player.position, multiplier: 1.0)
+            }
+            bossBtn.addAction(bossAction, for: .touchUpInside)
+            
             view.addSubview(xpBtn)
             view.addSubview(killBtn)
+            view.addSubview(bossBtn) // Don't forget to add it to the view!
             
-        NSLayoutConstraint.activate([
-                    xpBtn.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
-                    xpBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-                    xpBtn.widthAnchor.constraint(equalToConstant: 100),
-                    xpBtn.heightAnchor.constraint(equalToConstant: 40),
-                    
-                    killBtn.topAnchor.constraint(equalTo: xpBtn.bottomAnchor, constant: 10),
-                    killBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-                    killBtn.widthAnchor.constraint(equalToConstant: 100),
-                    killBtn.heightAnchor.constraint(equalToConstant: 40)
-                ])
+            NSLayoutConstraint.activate([
+                xpBtn.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
+                xpBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                xpBtn.widthAnchor.constraint(equalToConstant: 100),
+                xpBtn.heightAnchor.constraint(equalToConstant: 40),
+                
+                killBtn.topAnchor.constraint(equalTo: xpBtn.bottomAnchor, constant: 10),
+                killBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                killBtn.widthAnchor.constraint(equalToConstant: 100),
+                killBtn.heightAnchor.constraint(equalToConstant: 40),
+                
+                // Constrain the new button right below the Kill All button
+                bossBtn.topAnchor.constraint(equalTo: killBtn.bottomAnchor, constant: 10),
+                bossBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                bossBtn.widthAnchor.constraint(equalToConstant: 100),
+                bossBtn.heightAnchor.constraint(equalToConstant: 40)
+            ])
         }
     
     private func setupLevelUpView() {

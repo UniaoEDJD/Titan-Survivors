@@ -8,4 +8,5 @@ struct PhysicsCategories{
     static let weapon: UInt32 = 0b1000
     static let powerUp: UInt32 = 0b10000
     static let heal: UInt32 = 0b100000
+    static let solidObstacle: UInt32 = 0b1000000
 }
