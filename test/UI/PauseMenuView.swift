@@ -16,10 +16,8 @@ class PauseMenuView: UIView {
     }
     
     private func setupUI() {
-        // Fundo escuro semi-transparente para dar destaque ao menu
         self.backgroundColor = UIColor(white: 0.0, alpha: 0.85)
         
-        // Título "PAUSED"
         let titleLabel = UILabel()
         titleLabel.text = "PAUSED"
         titleLabel.font = UIFont(name: "AvenirNext-Heavy", size: 48)
@@ -36,7 +34,6 @@ class PauseMenuView: UIView {
         // Ações dos Botões
         resumeBtn.addAction(UIAction { [weak self] _ in self?.onResumeSelected?() }, for: .touchUpInside)
         quitBtn.addAction(UIAction { [weak self] _ in self?.onQuitSelected?() }, for: .touchUpInside)
-        // (O botão Options ficará para depois!)
         
         // Organizar na vertical (StackView)
         let stack = UIStackView(arrangedSubviews: [resumeBtn, optionsBtn, quitBtn])

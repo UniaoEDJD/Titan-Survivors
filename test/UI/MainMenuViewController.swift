@@ -8,7 +8,6 @@ class MainMenuViewController: UIViewController {
     }
 
     private func setupUI() {
-        // 1. Fundo do Menu (Um cinza quase preto, sombrio)
         view.backgroundColor = UIColor(white: 0.1, alpha: 1.0)
         
         // Podes no futuro adicionar uma imagem de fundo épica:
@@ -17,7 +16,6 @@ class MainMenuViewController: UIViewController {
         // bgImage.frame = view.bounds
         // view.addSubview(bgImage)
 
-        // 2. Título Épico
         let titleLabel = UILabel()
         titleLabel.text = "TITAN SURVIVORS"
         titleLabel.font = UIFont(name: "AvenirNext-Heavy", size: 54)
@@ -62,7 +60,6 @@ class MainMenuViewController: UIViewController {
         ])
     }
     
-    // MARK: - Fábrica de Botões Bonitos
     private func createStyledButton(title: String, color: UIColor) -> UIButton {
         let btn = UIButton(type: .system)
         btn.setTitle(title, for: .normal)
@@ -75,19 +72,16 @@ class MainMenuViewController: UIViewController {
         btn.layer.borderWidth = 2
         btn.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
         
-        // Sombra para dar profundidade
         btn.layer.shadowColor = UIColor.black.cgColor
         btn.layer.shadowOffset = CGSize(width: 0, height: 4)
         btn.layer.shadowRadius = 4
         btn.layer.shadowOpacity = 0.5
         
-        // Altura fixa para todos os botões
         btn.heightAnchor.constraint(equalToConstant: 65).isActive = true
         
         return btn
     }
 
-    // MARK: - Ações
     @objc private func startGameTapped() {
         print("⚔️ A iniciar a batalha!")
         

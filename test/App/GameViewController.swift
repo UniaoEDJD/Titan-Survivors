@@ -1,10 +1,3 @@
-//
-//  GameViewController.swift
-//  test
-//
-//  Created by Gonçalo Araújo on 06/05/2026.
-//
-
 import UIKit
 import SpriteKit
 import GameplayKit
@@ -13,6 +6,7 @@ class GameViewController: UIViewController {
 
     private var levelUpView: LevelUpView!
     private var pauseMenuView: PauseMenuView!
+    private var gameOverView: GameOverView!
     
     override func loadView()
     {
@@ -35,6 +29,10 @@ class GameViewController: UIViewController {
                 self?.showLevelUpScreen(with: options)
             }
             
+            scene.requestGameOverUI = { [weak self] in
+                self?.showGameOverScreen()
+            }
+            
             // Handle what happens when a player taps a card
             levelUpView.onUpgradeSelected = { [weak self, weak scene] pickedUpgrade in
                 self?.levelUpView.isHidden = true
@@ -48,12 +46,11 @@ class GameViewController: UIViewController {
             
             // ADD THIS HERE: Hook up the dev cheat button to the scene
             setupDevCheatButton(for: scene)
-            
             setupDashButton(for: scene)
+            setupGameOverUI()
         }
     }
     
-    // MARK: - Dev Cheats
     private func setupDevCheatButton(for scene: GameScene) {
             // 1. Botão +100 XP
             let xpBtn = UIButton(type: .system)
@@ -105,7 +102,6 @@ class GameViewController: UIViewController {
                 ])
         }
     
-    // MARK: - Level Up UI
     private func setupLevelUpView() {
         levelUpView = LevelUpView()
         levelUpView.isHidden = true
@@ -168,7 +164,6 @@ class GameViewController: UIViewController {
             ])
         }
     
-    // MARK: - Pause UI
         private func setupPauseUI() {
             pauseMenuView = PauseMenuView()
             pauseMenuView.isHidden = true
@@ -194,7 +189,7 @@ class GameViewController: UIViewController {
             }
         }
         
-    private func setupPauseButton() {
+        private func setupPauseButton() {
             let pauseBtn = UIButton(type: .system)
             
             // 1. Usar um ícone oficial e redondo da Apple, muito mais elegante
@@ -241,6 +236,38 @@ class GameViewController: UIViewController {
                 pauseMenuView.isHidden = false
                 
                 UIView.animate(withDuration: 0.2) { self.pauseMenuView.alpha = 1 }
+            }
+        }
+    
+        private func setupGameOverUI() {
+            gameOverView = GameOverView()
+            gameOverView.isHidden = true
+            gameOverView.alpha = 0
+            gameOverView.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(gameOverView)
+            
+            NSLayoutConstraint.activate([
+                gameOverView.topAnchor.constraint(equalTo: view.topAnchor),
+                gameOverView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                gameOverView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                gameOverView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            ])
+            
+            gameOverView.onRestartSelected = { [weak self] in
+                guard let window = self?.view.window else { return }
+                window.rootViewController = GameViewController()
+            }
+            
+            gameOverView.onQuitSelected = { [weak self] in
+                guard let window = self?.view.window else { return }
+                window.rootViewController = MainMenuViewController()
+            }
+        }
+        
+        private func showGameOverScreen() {
+            gameOverView.isHidden = false
+            UIView.animate(withDuration: 0.5) {
+                self.gameOverView.alpha = 1
             }
         }
 }

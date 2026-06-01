@@ -15,6 +15,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var requestLevelUpUI: (([UpgradeOption]) -> Void)?
     var healthBar: HealthBarNode!
+    var requestGameOverUI: (() -> Void)?
     
     override func didMove(to view: SKView) {
         self.physicsWorld.contactDelegate = self
@@ -38,6 +39,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     // 3. Send those cards up to the ViewController to display
                     self.requestLevelUpUI?(draftedCards)
                 }
+        gameManager.onGameOver = { [weak self] in
+            guard let self else { return }
+            
+            self.isPaused = true
+            
+            self.requestGameOverUI?()
+        }
+        
         activeWeapons.append(DualBlades(upgradeManager: upgradeManager))
         
         scatterPowerUp(weaponID: "thunderspear", amount: 5, around: .zero, maxRadius: 1500)
@@ -67,7 +76,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
     func setupCamera() {
         cameraNode = SKCameraNode()
-        self.camera = cameraNode // Diz à Scene que esta é a câmara principal
+        self.camera = cameraNode // main camera
         addChild(cameraNode)
         
         healthBar = HealthBarNode()
@@ -81,12 +90,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func setupJoystick() {
             joystick = VirtualJoystick()
             
-            // Posicionar no canto inferior esquerdo do ecrã
             let xPos = -(size.width/2) + 100
             let yPos = -(size.height/2) + 100
             joystick.position = CGPoint(x: xPos, y: yPos)
             
-            // ATENÇÃO: Adicionar à câmara para ficar sempre visível!
             cameraNode.addChild(joystick)
     }
     
@@ -106,12 +113,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 weapon.update(dt: delta_time, player: player, scene: self, globalDamageMult: upgradeManager.GlobalDamageMult)
             }
         }
-        // 1. Atualizar a posição do jogador com base no joystick
+        // update player position
         if joystick.velocity != .zero && !player.isDashing {
             player.move(with: joystick.velocity)
         }
         
-        // 2. A câmara persegue a posição do jogador
+        // camera follows the player
         cameraNode.position = player.position
         for enemy in objectPool.allEnemies {
             enemy.update()
