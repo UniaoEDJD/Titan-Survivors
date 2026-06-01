@@ -1,6 +1,5 @@
 import SpriteKit
 
-
 class WeaponPickupNode : SKSpriteNode
 {
     let weaponID : String

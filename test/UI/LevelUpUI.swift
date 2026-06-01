@@ -16,7 +16,6 @@ class LevelUpView: UIView {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
     private func setupView() {
-        // Dark, blurred background
         backgroundColor = UIColor.black.withAlphaComponent(0.8)
         
         // Title

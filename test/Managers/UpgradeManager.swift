@@ -1,6 +1,5 @@
 import Foundation
 
-
 struct UpgradeOption{
     let id: String
     let title: String

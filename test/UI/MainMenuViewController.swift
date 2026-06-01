@@ -28,7 +28,6 @@ class MainMenuViewController: UIViewController {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(titleLabel)
 
-        // 3. StackView para organizar os botões verticalmente
         let buttonStack = UIStackView()
         buttonStack.axis = .vertical
         buttonStack.spacing = 20
@@ -63,7 +62,6 @@ class MainMenuViewController: UIViewController {
         btn.titleLabel?.font = UIFont(name: "AvenirNext-Bold", size: 24)
         btn.backgroundColor = color
         
-        // Estilo e bordas
         btn.layer.cornerRadius = 12
         btn.layer.borderWidth = 2
         btn.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
