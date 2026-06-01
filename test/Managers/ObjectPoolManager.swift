@@ -15,7 +15,6 @@ class ObjectPool{
     {
         self.player = player
         
-        //preload dos inimigos
         preload(type: .normal, count: 300, scene: scene)
         preload(type: .abnormal, count: 100, scene: scene)
         preload(type: .crawler, count: 100, scene: scene)
@@ -25,7 +24,6 @@ class ObjectPool{
             for _ in 0..<count {
                 let enemy: EnemyNode
                 
-                // Decidir qual classe instanciar
                 switch type {
                 case .normal: enemy = NormalTitan()
                 case .abnormal: enemy = AbnormalTitan()
@@ -36,7 +34,6 @@ class ObjectPool{
                 enemy.physicsBody?.isDynamic = false
                 enemy.position = CGPoint(x: 10000, y: 10000)
                 
-                // Lógica do Drop de XP usa o xpReward dinâmico de cada inimigo!
                 enemy.onDeath = { [weak scene, weak enemy] dropPosition in
                     guard let reward = enemy?.xpReward else { return }
                     let gem = ExperienceNode(value: reward)
@@ -46,7 +43,6 @@ class ObjectPool{
                 
                 scene.addChild(enemy)
                 
-                // Guardar na respetiva gaveta
                 switch type {
                 case .normal: normalPool.append(enemy)
                 case .abnormal: abnormalPool.append(enemy)

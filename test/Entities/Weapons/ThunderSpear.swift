@@ -1,9 +1,9 @@
 import SpriteKit
 
 class ThunderSpears: Weapon {
-    var cooldown: TimeInterval = 3.0 // Fires every 3 seconds
-    var damage: Double = 1500.0 // Massive damage
-    var attackRange: Double = 400.0 // Ranged!
+    var cooldown: TimeInterval = 3.0
+    var damage: Double = 1500.0
+    var attackRange: Double = 400.0
     weak var upgradeManager: UpgradeManager?
     
     private var timeSinceLastAttack: TimeInterval = 0
@@ -20,7 +20,6 @@ class ThunderSpears: Weapon {
         
         if timeSinceLastAttack >= effectiveCooldown {
             if let gameScene = scene as? SKScene {
-                // Find an enemy to shoot at
                 if let target = getTargetEnemy(to: player, in: gameScene) {
                     fireSpear(from: player, targetPos: target.position, scene: gameScene, multiplier: globalDamageMult, extraShots: state.extraShots)
                     timeSinceLastAttack = 0
@@ -86,7 +85,6 @@ class ThunderSpears: Weapon {
         let explosionRadius: CGFloat = 80.0
         let finalDamage = self.damage * multiplier
         
-        // 1. VISUAL: Big orange blast
         let blast = SKShapeNode(circleOfRadius: explosionRadius)
         blast.fillColor = UIColor.orange.withAlphaComponent(0.6)
         blast.strokeColor = .red
@@ -98,7 +96,6 @@ class ThunderSpears: Weapon {
         let fade = SKAction.fadeOut(withDuration: 0.2)
         blast.run(SKAction.sequence([expand, fade, SKAction.removeFromParent()]))
         
-        // 2. PURE MATH AoE DAMAGE (No physics pushing!)
         let allEnemies = scene.children.compactMap { $0 as? EnemyNode }.filter { !$0.isHidden }
 
         for enemy in allEnemies {
@@ -110,11 +107,10 @@ class ThunderSpears: Weapon {
                  
                     enemy.takeDamage(finalDamage)
                     
-                    // Knockback away from the center of the explosion
                     let pushDistance = max(distance, 1.0)
                     let nx = dx / pushDistance
                     let ny = dy / pushDistance
-                    let knockbackForce: CGFloat = 35.0 // Bigger knockback for explosions!
+                    let knockbackForce: CGFloat = 35.0
                     
                     let pushAction = SKAction.moveBy(x: nx * knockbackForce, y: ny * knockbackForce, duration: 0.15)
                     pushAction.timingMode = .easeOut

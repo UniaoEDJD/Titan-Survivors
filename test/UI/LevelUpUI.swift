@@ -1,9 +1,3 @@
-//
-//  LevelUpUI.swift
-//  test
-//
-//  Created by Tiago Miranda on 15/05/2026.
-//
 import UIKit
 
 class LevelUpView: UIView {
@@ -70,11 +64,9 @@ class LevelUpView: UIView {
         btn.layer.borderWidth = 2
         btn.layer.borderColor = UIColor.systemYellow.cgColor
         
-        // Use a basic multi-line label setup for the button
         btn.titleLabel?.numberOfLines = 0
         btn.titleLabel?.textAlignment = .center
         
-        // Format the text to show the Rarity, Title, and Description
         let cardText = """
         [\(option.rarity.rawValue)]
         
@@ -85,7 +77,6 @@ class LevelUpView: UIView {
         btn.setTitle(cardText, for: .normal)
         btn.setTitleColor(.white, for: .normal)
         
-        // Attach the action using the new iOS 14+ UIAction closure
         let action = UIAction { [weak self] _ in
             self?.onUpgradeSelected?(option)
         }

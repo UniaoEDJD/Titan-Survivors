@@ -2,7 +2,6 @@ import UIKit
 
 class PauseMenuView: UIView {
     
-    // Callbacks para avisar o GameViewController do que o jogador escolheu
     var onResumeSelected: (() -> Void)?
     var onQuitSelected: (() -> Void)?
     

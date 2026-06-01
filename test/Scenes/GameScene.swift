@@ -30,13 +30,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gameManager.onLevelUp = { [weak self] in
                     guard let self = self else { return }
                     
-                    // 1. Pause the game engine completely
                     self.isPaused = true
                     
-                    // 2. Ask the UpgradeManager to roll 3 random cards
                     let draftedCards = self.upgradeManager.rollUpgrades(count: 3)
                     
-                    // 3. Send those cards up to the ViewController to display
                     self.requestLevelUpUI?(draftedCards)
                 }
         gameManager.onGameOver = { [weak self] in
@@ -76,7 +73,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
     func setupCamera() {
         cameraNode = SKCameraNode()
-        self.camera = cameraNode // main camera
+        self.camera = cameraNode
         addChild(cameraNode)
         
         healthBar = HealthBarNode()
@@ -113,12 +110,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 weapon.update(dt: delta_time, player: player, scene: self, globalDamageMult: upgradeManager.GlobalDamageMult)
             }
         }
-        // update player position
         if joystick.velocity != .zero && !player.isDashing {
             player.move(with: joystick.velocity)
         }
         
-        // camera follows the player
         cameraNode.position = player.position
         for enemy in objectPool.allEnemies {
             enemy.update()
@@ -204,8 +199,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         if let healthBar = healthBar
         {
-            let xPos = -(size.width / 2) + 40  // 40 pixels de margem da esquerda
-            let yPos = (size.height / 2) - 40  // 40 pixels de margem do topo
+            let xPos = -(size.width / 2) + 40
+            let yPos = (size.height / 2) - 40
             healthBar.position = CGPoint(x: xPos, y: yPos)
         }
     }

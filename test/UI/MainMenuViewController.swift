@@ -40,20 +40,16 @@ class MainMenuViewController: UIViewController {
         let startBtn = createStyledButton(title: "START RUN", color: UIColor(red: 0.2, green: 0.6, blue: 0.3, alpha: 1.0)) // Verde Tropa
         let optionsBtn = createStyledButton(title: "OPTIONS", color: .darkGray)
 
-        // Adicionar a ação ao botão de Start
         startBtn.addTarget(self, action: #selector(startGameTapped), for: .touchUpInside)
 
-        // Adicionar à Stack
         buttonStack.addArrangedSubview(startBtn)
         buttonStack.addArrangedSubview(optionsBtn)
 
         // 5. Constraints (Regras de posicionamento automático)
         NSLayoutConstraint.activate([
-            // Título colado ao topo
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            // Botões centrados no ecrã
             buttonStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             buttonStack.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 40),
             buttonStack.widthAnchor.constraint(equalToConstant: 280)

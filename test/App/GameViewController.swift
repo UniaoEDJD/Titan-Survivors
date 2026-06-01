@@ -24,7 +24,6 @@ class GameViewController: UIViewController {
             let scene = GameScene(size: view.bounds.size)
             scene.scaleMode = .resizeFill
             
-            // Hook up the communication bridge
             scene.requestLevelUpUI = { [weak self] options in
                 self?.showLevelUpScreen(with: options)
             }
@@ -33,7 +32,6 @@ class GameViewController: UIViewController {
                 self?.showGameOverScreen()
             }
             
-            // Handle what happens when a player taps a card
             levelUpView.onUpgradeSelected = { [weak self, weak scene] pickedUpgrade in
                 self?.levelUpView.isHidden = true
                 scene?.resumeGame(afterPicking: pickedUpgrade)
@@ -44,7 +42,6 @@ class GameViewController: UIViewController {
             view.showsFPS = true
             view.showsNodeCount = true
             
-            // ADD THIS HERE: Hook up the dev cheat button to the scene
             setupDevCheatButton(for: scene)
             setupDashButton(for: scene)
             setupGameOverUI()
@@ -52,7 +49,6 @@ class GameViewController: UIViewController {
     }
     
     private func setupDevCheatButton(for scene: GameScene) {
-            // 1. Botão +100 XP
             let xpBtn = UIButton(type: .system)
             xpBtn.setTitle("+100 XP", for: .normal)
             xpBtn.backgroundColor = .systemRed
@@ -67,10 +63,9 @@ class GameViewController: UIViewController {
             }
             xpBtn.addAction(xpAction, for: .touchUpInside)
             
-            // 2. Botão Kill All
             let killBtn = UIButton(type: .system)
             killBtn.setTitle("Kill All", for: .normal)
-            killBtn.backgroundColor = .systemPurple // Cor diferente para distinguir
+            killBtn.backgroundColor = .systemPurple
             killBtn.setTitleColor(.white, for: .normal)
             killBtn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
             killBtn.layer.cornerRadius = 8
@@ -82,19 +77,15 @@ class GameViewController: UIViewController {
             }
             killBtn.addAction(killAction, for: .touchUpInside)
             
-            // Adicionar à View
             view.addSubview(xpBtn)
             view.addSubview(killBtn)
             
-            // Constraints para ficarem no canto superior direito, um debaixo do outro
         NSLayoutConstraint.activate([
-                    // Botão XP agora tem um constant de 80 no topo para fugir do botão de pausa
                     xpBtn.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
                     xpBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
                     xpBtn.widthAnchor.constraint(equalToConstant: 100),
                     xpBtn.heightAnchor.constraint(equalToConstant: 40),
                     
-                    // Botão Kill All logo abaixo do botão de XP
                     killBtn.topAnchor.constraint(equalTo: xpBtn.bottomAnchor, constant: 10),
                     killBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
                     killBtn.widthAnchor.constraint(equalToConstant: 100),
@@ -192,11 +183,9 @@ class GameViewController: UIViewController {
         private func setupPauseButton() {
             let pauseBtn = UIButton(type: .system)
             
-            // 1. Usar um ícone oficial e redondo da Apple, muito mais elegante
             let config = UIImage.SymbolConfiguration(pointSize: 32, weight: .regular)
             pauseBtn.setImage(UIImage(systemName: "pause.circle.fill", withConfiguration: config), for: .normal)
             
-            // 2. Cores limpas (Branco puro) com uma sombra suave para destacar em qualquer fundo
             pauseBtn.tintColor = .white
             pauseBtn.layer.shadowColor = UIColor.black.cgColor
             pauseBtn.layer.shadowOffset = CGSize(width: 0, height: 2)
@@ -211,7 +200,6 @@ class GameViewController: UIViewController {
             
             view.addSubview(pauseBtn)
             
-            // 3. FIX: Colocar no Canto Superior DIREITO (trailingAnchor em vez de leadingAnchor)
             NSLayoutConstraint.activate([
                 pauseBtn.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
                 pauseBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
@@ -224,13 +212,11 @@ class GameViewController: UIViewController {
             guard let skView = view as? SKView, let scene = skView.scene else { return }
             
             if scene.isPaused {
-                // RETOMAR
                 UIView.animate(withDuration: 0.2, animations: { self.pauseMenuView.alpha = 0 }) { _ in
                     self.pauseMenuView.isHidden = true
                     scene.isPaused = false
                 }
             } else {
-                // PAUSAR
                 scene.isPaused = true
                 pauseMenuView.alpha = 0
                 pauseMenuView.isHidden = false

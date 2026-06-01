@@ -20,14 +20,13 @@ class DualBlades: Weapon {
         let effectiveCooldown = cooldown * state.cooldownMult
         
         if timeSinceLastAttack >= effectiveCooldown {
-            // Convertemos para SKScene para usar as funções auxiliares
             if let gameScene = scene as? SKScene {
                 let targets = getQuadrantedTargets(player: player, in: gameScene, count: 1 + state.extraShots)
                 if !targets.isEmpty {
                     for target in targets {
                         fireSlash(from: player, towards: target, scene: gameScene, multiplier: globalDamageMult)
                     }
-                    timeSinceLastAttack = 0 // Reset do cooldown apenas quando disparamos!
+                    timeSinceLastAttack = 0
                 }
             }
         }
@@ -72,17 +71,14 @@ class DualBlades: Weapon {
         let radius: CGFloat = 40.0
         let finalDamage = self.damage * multiplier
         
-        // Apanhamos todos os inimigos vivos baseados na classe e não no nome de texto
         let allEnemies = scene.children.compactMap { $0 as? EnemyNode }.filter { !$0.isHidden }
         
         for enemyNode in allEnemies {
-            // Calcula a distância do centro do corte até a este inimigo
             let dx = enemyNode.position.x - target.position.x
             let dy = enemyNode.position.y - target.position.y
             let distance = sqrt((dx * dx) + (dy * dy))
             
             if distance <= radius {
-                // Aplicamos o dano diretamente:
                 enemyNode.takeDamage(finalDamage)
                 
                 let pushDx = enemyNode.position.x - player.position.x
@@ -124,7 +120,6 @@ class DualBlades: Weapon {
         
         scene.addChild(slashVisual)
         
-        // Animação e destruição do visual
         slashVisual.setScale(0.5)
         let popIn = SKAction.scale(to: 1.5, duration: 0.05)
         let fadeOut = SKAction.fadeOut(withDuration: 0.15)

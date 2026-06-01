@@ -46,14 +46,11 @@ class EnemyNode: SKSpriteNode{
     }
     
     func update() {
-            // Se o inimigo estiver escondido, não faz NADA. A CPU poupa o trabalho.
             guard !isHidden, let targetPlayer else { return }
             
             let dx = targetPlayer.position.x - self.position.x
             let dy = targetPlayer.position.y - self.position.y
             
-            // OTIMIZAÇÃO: A raiz quadrada (sqrt) é uma operação pesada.
-            // Se apenas queres a direção, podes usar a função atan2
             let angle = atan2(dy, dx)
             self.position.x += cos(angle) * movementSpeed
             self.position.y += sin(angle) * movementSpeed
@@ -78,7 +75,6 @@ class EnemyNode: SKSpriteNode{
         self.isHidden = true
         self.physicsBody?.isDynamic = false
         
-        //aviso de morte e passa a posição de onde morreu
         onDeath?(self.position)
     }
 }

@@ -56,7 +56,6 @@ class UpgradeManager
         var draftedUpgrades: [UpgradeOption] = []
         var pool: [String] = []
         
-        // Dilute weapon pool: add 10x stats for every 1x weapon upgrade
         for _ in 0..<10 { pool.append(contentsOf: statUpgradeIDs) }
         pool.append(contentsOf: weaponUpgradeIDs)
         
@@ -179,7 +178,6 @@ class UpgradeManager
         
     }
 
-    
     func applyUpgrade(_ upgrade: UpgradeOption)
     {
         upgrade.applyAffect()
