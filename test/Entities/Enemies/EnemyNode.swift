@@ -26,16 +26,20 @@ class EnemyNode: SKSpriteNode{
     }
     
     private func setupPhysics() {
-            self.physicsBody = SKPhysicsBody(circleOfRadius: self.size.width / 2.0)
-            self.physicsBody?.affectedByGravity = false
-            self.physicsBody?.allowsRotation = false
+        self.physicsBody = SKPhysicsBody(circleOfRadius: self.size.width / 2.0)
+        self.physicsBody?.affectedByGravity = false
+        self.physicsBody?.allowsRotation = false
             
-            self.physicsBody?.categoryBitMask = PhysicsCategories.enemy
+        self.physicsBody?.categoryBitMask = PhysicsCategories.enemy
             
-            self.physicsBody?.collisionBitMask = 0
+        self.physicsBody?.collisionBitMask = PhysicsCategories.enemy
             
-            self.physicsBody?.contactTestBitMask = PhysicsCategories.player
-        }
+        self.physicsBody?.contactTestBitMask = PhysicsCategories.player
+        
+        self.physicsBody?.restitution = 0.0
+        self.physicsBody?.friction = 0.0
+        self.physicsBody?.mass = 1.0
+    }
     
     func spawn(at position: CGPoint, target: SKSpriteNode){
         self.position = position
@@ -46,15 +50,19 @@ class EnemyNode: SKSpriteNode{
     }
     
     func update() {
-            guard !isHidden, let targetPlayer else { return }
-            
-            let dx = targetPlayer.position.x - self.position.x
-            let dy = targetPlayer.position.y - self.position.y
-            
-            let angle = atan2(dy, dx)
-            self.position.x += cos(angle) * movementSpeed
-            self.position.y += sin(angle) * movementSpeed
-        }
+        guard !isHidden, let targetPlayer else { return }
+        
+        let dx = targetPlayer.position.x - self.position.x
+        let dy = targetPlayer.position.y - self.position.y
+    
+        let angle = atan2(dy, dx)
+        let speedPerSecond = movementSpeed * 60.0
+        
+        self.physicsBody?.velocity = CGVector(
+            dx: cos(angle) * speedPerSecond,
+            dy: sin(angle) * speedPerSecond
+        )
+    }
     
     func takeDamage(_ amount: CGFloat){
         currentHealth -= amount
