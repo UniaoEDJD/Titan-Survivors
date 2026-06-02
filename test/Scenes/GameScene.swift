@@ -14,13 +14,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let gameManager = GameManager()
     let playerSpeed: CGFloat = 5.0
     var activeWeapons: [Weapon] = []
+    var healthBar: HealthBarNode!
     
     var backgroundChunks: [SKNode] = []
     let chunkSize: CGFloat = 2048.0
     
     var requestLevelUpUI: (([UpgradeOption]) -> Void)?
-    var healthBar: HealthBarNode!
     var requestGameOverUI: ((TimeInterval, Int, Int) -> Void)?
+    var requestVictoryUI: ((Int, Int) -> Void)?
     
     override func didMove(to view: SKView) {
         self.physicsWorld.contactDelegate = self
@@ -47,6 +48,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.isPaused = true
             
             self.requestGameOverUI?(self.gameManager.runTime, self.gameManager.currentXp, self.gameManager.totalDamageDealt)
+        }
+        
+        gameManager.onVictory = { [weak self] in
+            guard let self else { return }
+            
+            self.isPaused = true
+            
+            self.requestVictoryUI?(self.gameManager.playerLevel, self.gameManager.totalDamageDealt)
         }
         
         activeWeapons.append(DualBlades(upgradeManager: upgradeManager))

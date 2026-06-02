@@ -7,6 +7,7 @@ class GameViewController: UIViewController {
     private var levelUpView: LevelUpView!
     private var pauseMenuView: PauseMenuView!
     private var gameOverView: GameOverView!
+    private var gameVictoryView: GameVictoryView!
     
     override func loadView()
     {
@@ -31,7 +32,9 @@ class GameViewController: UIViewController {
             scene.requestGameOverUI = { [weak self] (runTime, playerLevel, totalDamageDealt) in
                 self?.showGameOverScreen(time: runTime, level: playerLevel, damage: totalDamageDealt)
             }
-            
+            scene.requestVictoryUI = { [weak self] (playerLevel, totalDamageDealt) in
+                self?.showVictoryScreen(level: playerLevel, damage: totalDamageDealt)
+            }
             levelUpView.onUpgradeSelected = { [weak self, weak scene] pickedUpgrade in
                 self?.levelUpView.isHidden = true
                 scene?.resumeGame(afterPicking: pickedUpgrade)
@@ -45,6 +48,7 @@ class GameViewController: UIViewController {
             setupDevCheatButton(for: scene)
             setupDashButton(for: scene)
             setupGameOverUI()
+            setupVictoryUI()
         }
     }
     
@@ -77,7 +81,6 @@ class GameViewController: UIViewController {
             }
             killBtn.addAction(killAction, for: .touchUpInside)
             
-            // --- NEW BOSS BUTTON ---
             let bossBtn = UIButton(type: .system)
             bossBtn.setTitle("Spawn Boss", for: .normal)
             bossBtn.backgroundColor = .systemOrange
@@ -88,14 +91,13 @@ class GameViewController: UIViewController {
             
             let bossAction = UIAction { _ in
                 print("🛠️ DEV CHEAT: SPAWN BOSS EVENT")
-                // Spawns the boss with a 1.0 multiplier (base stats)
                 scene.spawnManager.spawnBossEvent(around: scene.player.position, multiplier: 1.0)
             }
             bossBtn.addAction(bossAction, for: .touchUpInside)
             
             view.addSubview(xpBtn)
             view.addSubview(killBtn)
-            view.addSubview(bossBtn) // Don't forget to add it to the view!
+            view.addSubview(bossBtn)
             
             NSLayoutConstraint.activate([
                 xpBtn.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
@@ -108,7 +110,6 @@ class GameViewController: UIViewController {
                 killBtn.widthAnchor.constraint(equalToConstant: 100),
                 killBtn.heightAnchor.constraint(equalToConstant: 40),
                 
-                // Constrain the new button right below the Kill All button
                 bossBtn.topAnchor.constraint(equalTo: killBtn.bottomAnchor, constant: 10),
                 bossBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
                 bossBtn.widthAnchor.constraint(equalToConstant: 100),
@@ -151,25 +152,22 @@ class GameViewController: UIViewController {
     private func setupDashButton(for scene: GameScene) {
             let dashBtn = UIButton(type: .system)
             
-            // You can replace this with a cool ODM gear icon later!
             dashBtn.setTitle("DASH", for: .normal)
             dashBtn.backgroundColor = UIColor.white.withAlphaComponent(0.2)
             dashBtn.setTitleColor(.white, for: .normal)
             dashBtn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
-            dashBtn.layer.cornerRadius = 35 // Makes it a perfect circle if size is 70x70
+            dashBtn.layer.cornerRadius = 35
             dashBtn.layer.borderWidth = 2
             dashBtn.layer.borderColor = UIColor.cyan.cgColor
             dashBtn.translatesAutoresizingMaskIntoConstraints = false
             
             let action = UIAction { _ in
-                // Tell the player to dash in the direction the joystick is pointing!
                 scene.player.performDash(joystickVel: scene.joystick.velocity)
             }
-            dashBtn.addAction(action, for: .touchDown) // Use touchDown so it fires the instantly
+            dashBtn.addAction(action, for: .touchDown)
             
             view.addSubview(dashBtn)
             
-            // Pin it to the bottom right
             NSLayoutConstraint.activate([
                 dashBtn.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
                 dashBtn.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -40),
@@ -191,14 +189,11 @@ class GameViewController: UIViewController {
                 pauseMenuView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
             ])
             
-            // Retomar Jogo
             pauseMenuView.onResumeSelected = { [weak self] in
                 self?.togglePauseGame()
             }
             
-            // Sair para o Menu
             pauseMenuView.onQuitSelected = { [weak self] in
-                // Fecha este ecrã e volta ao Main Menu automaticamente!
                 self?.dismiss(animated: true)
             }
         }
@@ -282,4 +277,33 @@ class GameViewController: UIViewController {
             self.gameOverView.alpha = 1
         }
     }
+    
+        private func setupVictoryUI() {
+            gameVictoryView = GameVictoryView()
+            gameVictoryView.isHidden = true
+            gameVictoryView.alpha = 0
+            gameVictoryView.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(gameVictoryView)
+            
+            NSLayoutConstraint.activate([
+                gameVictoryView.topAnchor.constraint(equalTo: view.topAnchor),
+                gameVictoryView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                gameVictoryView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                gameVictoryView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            ])
+            
+            gameVictoryView.onReturnToMenuSelected = { [weak self] in
+                guard let window = self?.view.window else { return }
+                window.rootViewController = MainMenuViewController()
+            }
+        }
+        
+        private func showVictoryScreen(level: Int, damage: Int) {
+            gameVictoryView.configureStats(level: level, damage: damage)
+            
+            gameVictoryView.isHidden = false
+            UIView.animate(withDuration: 0.8) {
+                self.gameVictoryView.alpha = 1
+            }
+        }
 }

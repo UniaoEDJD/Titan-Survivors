@@ -52,7 +52,6 @@ class PlayerNode : SKSpriteNode {
     
     private func setupAnimations() {
         let sheet = SKTexture(imageNamed: "player_sheet")
-        // If your pixel art looks blurry, keep nearest filtering
         sheet.filteringMode = .nearest
         
         let cols: CGFloat = 3
@@ -60,7 +59,6 @@ class PlayerNode : SKSpriteNode {
         let frameW = 1.0 / cols
         let frameH = 1.0 / rows
         
-        // SpriteKit rect origin (0,0) is bottom-left
         func extractRow(row: Int) -> [SKTexture] {
             var frames = [SKTexture]()
             for col in 0..<Int(cols) {
@@ -74,17 +72,12 @@ class PlayerNode : SKSpriteNode {
             return frames
         }
         
-        // Bottom row of image (Y=0.0 in SpriteKit) is Up
         let upFrames = extractRow(row: 0)
-        // 3rd row is Right
         let rightFrames = extractRow(row: 1)
-        // 2nd row is Left
         let leftFrames = extractRow(row: 2)
-        // Top row is Down
         let downFrames = extractRow(row: 3)
         
         func createWalkAction(frames: [SKTexture]) -> SKAction {
-            // Sequence [LeftStep, Walk/Idle, RightStep, Walk/Idle]
             let loopFrames = [frames[1], frames[0], frames[1], frames[2]]
             return SKAction.repeatForever(SKAction.animate(with: loopFrames, timePerFrame: 0.15))
         }

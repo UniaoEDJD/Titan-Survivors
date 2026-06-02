@@ -2,7 +2,6 @@ import UIKit
 
 class LevelUpView: UIView {
     
-    // Callback to tell the GameViewController which card was picked
     var onUpgradeSelected: ((UpgradeOption) -> Void)?
     
     private let stackView = UIStackView()
@@ -18,7 +17,6 @@ class LevelUpView: UIView {
     private func setupView() {
         backgroundColor = UIColor.black.withAlphaComponent(0.8)
         
-        // Title
         titleLabel.text = "LEVEL UP"
         titleLabel.textColor = .white
         titleLabel.font = UIFont.boldSystemFont(ofSize: 40)
@@ -26,14 +24,12 @@ class LevelUpView: UIView {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(titleLabel)
         
-        // StackView for the 3 cards
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
         stackView.spacing = 20
         stackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stackView)
         
-        // Layout Constraints
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 40),
             titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
@@ -46,10 +42,8 @@ class LevelUpView: UIView {
     }
     
     func displayUpgrades(_ options: [UpgradeOption]) {
-        // Clear old cards
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        // Generate new cards
         for option in options {
             let cardBtn = createCardButton(for: option)
             stackView.addArrangedSubview(cardBtn)

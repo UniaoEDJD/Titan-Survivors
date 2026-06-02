@@ -25,23 +25,18 @@ class PauseMenuView: UIView {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(titleLabel)
         
-        // Botões do Menu
         let resumeBtn = createStyledButton(title: "RESUME", color: UIColor(red: 0.2, green: 0.6, blue: 0.3, alpha: 1.0))
-        let optionsBtn = createStyledButton(title: "OPTIONS", color: .darkGray)
         let quitBtn = createStyledButton(title: "QUIT TO MENU", color: .systemRed)
         
-        // Ações dos Botões
         resumeBtn.addAction(UIAction { [weak self] _ in self?.onResumeSelected?() }, for: .touchUpInside)
         quitBtn.addAction(UIAction { [weak self] _ in self?.onQuitSelected?() }, for: .touchUpInside)
         
-        // Organizar na vertical (StackView)
-        let stack = UIStackView(arrangedSubviews: [resumeBtn, optionsBtn, quitBtn])
+        let stack = UIStackView(arrangedSubviews: [resumeBtn, quitBtn])
         stack.axis = .vertical
         stack.spacing = 20
         stack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stack)
         
-        // Posições no ecrã
         NSLayoutConstraint.activate([
             titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
             titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -120),

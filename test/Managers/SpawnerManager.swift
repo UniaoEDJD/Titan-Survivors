@@ -44,7 +44,6 @@ class SpawnerManager{
     
     private func updateDifficulty(runTime: TimeInterval)
     {
-        //FASE 3 - apartir 10 min
         if runTime >= 600{
             currentSpawnInterval = 0.2
             spawnChance = [
@@ -53,7 +52,6 @@ class SpawnerManager{
                 (.crawler, 30)
             ]
         }
-        //FASE 2 - apartir 5 min
         else if runTime >= 300{
             currentSpawnInterval = 0.8
             spawnChance = [
@@ -62,7 +60,6 @@ class SpawnerManager{
                 (.crawler, 20)
             ]
         }
-        //FASE 1.5 - apartir 2 min
         else if runTime >= 120{
             currentSpawnInterval = 1.2
             spawnChance = [
@@ -70,7 +67,6 @@ class SpawnerManager{
                 (.crawler, 15)
             ]
         }
-        //FASE 1 - inicio jogo
         else{
             currentSpawnInterval = 2.0
             spawnChance = [
@@ -140,10 +136,8 @@ class SpawnerManager{
             let boss = TitanBossNode(multiplier: multiplier)
             boss.spawn(at: CGPoint(x: playerPos.x, y: playerPos.y + 800), target: target ?? SKSpriteNode(), multiplier: 1.0)
             
-            // Defeat boss -> Remove all colossals
             boss.onDeath = { [weak scene] _ in
                 scene?.enumerateChildNodes(withName: "colossalTitan") { node, _ in
-                    // Add a nice fade out effect before removing
                     let fade = SKAction.fadeOut(withDuration: 1.0)
                     let remove = SKAction.removeFromParent()
                     node.run(SKAction.sequence([fade, remove]))
@@ -152,8 +146,8 @@ class SpawnerManager{
             
             scene.addChild(boss)
             
-            let colossalCount = 140 // Divides nicely into 360 degrees
-            let circleRadius: CGFloat = 1500.0 // True circle
+            let colossalCount = 140
+            let circleRadius: CGFloat = 1500.0
             
             for i in 0..<colossalCount {
                 let angle = (CGFloat.pi * 2.0 / CGFloat(colossalCount)) * CGFloat(i)

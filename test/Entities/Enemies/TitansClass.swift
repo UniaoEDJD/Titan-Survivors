@@ -78,7 +78,7 @@ class ColossalTitan: EnemyNode {
     
     override func takeDamage(_ amount: CGFloat) {
         super.takeDamage(amount)
-        if currentHealth <= 0 { self.removeFromParent() } // Clean up memory!
+        if currentHealth <= 0 { self.removeFromParent() }
         
 
     }

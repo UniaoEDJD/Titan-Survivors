@@ -9,10 +9,10 @@ class TitanBossNode: EnemyNode {
         super.init(texture: texture, color: .clear, size: CGSize(width: 150, height: 150))
         self.name = "bossTitan"
         
-        self.baseMaxHealth = 30000.0 // Extremely tanky
+        self.baseMaxHealth = 30000.0
         self.baseDamage = 50.0
-        self.movementSpeed = 0.6 // Slow, looming threat
-        self.xpReward = 1000 // Huge level up on kill
+        self.movementSpeed = 0.6
+        self.xpReward = 1000
         
         self.maxHealth = self.baseMaxHealth * multiplier
         self.currentHealth = self.maxHealth

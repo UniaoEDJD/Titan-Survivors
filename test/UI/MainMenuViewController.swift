@@ -37,14 +37,10 @@ class MainMenuViewController: UIViewController {
 
         let scoutGreen = UIColor(red: 0.12, green: 0.30, blue: 0.18, alpha: 0.9)
         let startBtn = createStyledButton(title: "START RUN", color: scoutGreen)
-        
-        let translucentBlack = UIColor(white: 0.0, alpha: 0.6)
-        let optionsBtn = createStyledButton(title: "OPTIONS", color: translucentBlack)
 
         startBtn.addTarget(self, action: #selector(startGameTapped), for: .touchUpInside)
 
         buttonStack.addArrangedSubview(startBtn)
-        buttonStack.addArrangedSubview(optionsBtn)
 
         NSLayoutConstraint.activate([
             bgImage.topAnchor.constraint(equalTo: view.topAnchor),

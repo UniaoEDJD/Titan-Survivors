@@ -32,7 +32,6 @@ class XPBarNode: SKNode {
         addChild(fillBar)
         addChild(border)
         
-        // Começa a zero
         fillBar.size.width = 0
     }
     

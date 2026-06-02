@@ -15,8 +15,6 @@ class WeaponPickupNode : SKSpriteNode
         
         if let tex = texture {
             tex.filteringMode = .nearest
-            // If the spear image is long, you can adjust the size proportions here, e.g.:
-            // self.size = CGSize(width: 40, height: 10) 
         }
         
         self.position = position

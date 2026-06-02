@@ -10,7 +10,7 @@ enum GameState{
 class GameManager{
     private(set) var currentState: GameState = .playing
     private(set) var runTime: TimeInterval = 0.0
-    private let maxRunTime: TimeInterval = 900.0
+    private let maxRunTime: TimeInterval = 10.0
     
     private(set) var playerLevel: Int = 1
     private(set) var currentXp: Int = 0
