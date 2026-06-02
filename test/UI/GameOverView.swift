@@ -31,9 +31,9 @@ class GameOverView: UIView {
         addSubview(titleLabel)
         
         statsLabel.font = UIFont(name: "AvenirNext-Medium", size: 20)
-        statsLabel.textColor = .systemYellow // Amarelo para destaque das stats
+        statsLabel.textColor = .systemYellow
         statsLabel.textAlignment = .center
-        statsLabel.numberOfLines = 2 // Permite duas linhas de texto
+        statsLabel.numberOfLines = 2
         statsLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(statsLabel)
         
