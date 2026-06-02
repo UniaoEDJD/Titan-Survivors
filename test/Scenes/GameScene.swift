@@ -102,7 +102,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let bigTreeTex = getTexture(col: 0, row: 0, widthCells: 1, heightCells: 2)
         // Bushes
         let bushTex1 = getTexture(col: 1, row: 1)
-        let bushTex2 = getTexture(col: 3, row: 0)
+        let bushTex2 = getTexture(col: 2, row: 0)
         let bushTex3 = getTexture(col: 3, row: 3)
         
         let decorationTemplates = [bigTreeTex, bushTex1, bushTex2, bushTex3]
