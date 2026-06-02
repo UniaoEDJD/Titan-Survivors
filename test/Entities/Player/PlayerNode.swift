@@ -28,6 +28,12 @@ class PlayerNode : SKSpriteNode {
     var timeLastDash: TimeInterval = 3.0
     var dashCooldown: TimeInterval = 3.0
     
+    // Animation properties
+    enum Direction { case up, down, left, right, idle }
+    var currentDirection: Direction = .idle
+    var lastFacing: Direction = .down
+    var walkAnimations: [Direction: SKAction] = [:]
+    var idleTextures: [Direction: SKTexture] = [:]
     
     init(upgradeManager: UpgradeManager, gameManager: GameManager) {
         self.upgradeManager = upgradeManager
@@ -35,11 +41,63 @@ class PlayerNode : SKSpriteNode {
         
         self.currentHealth = upgradeManager.effectiveMaxHealth
         
-        let texture = SKTexture(imageNamed: "player")
-        super.init(texture: nil, color: .systemBlue, size: CGSize(width: 40, height: 40))
+        super.init(texture: nil, color: .clear, size: CGSize(width: 40, height: 40))
         self.name = "player"
         
+        setupAnimations()
+        self.texture = idleTextures[.down]
+        
         setupPhysics()
+    }
+    
+    private func setupAnimations() {
+        let sheet = SKTexture(imageNamed: "player_sheet")
+        // If your pixel art looks blurry, keep nearest filtering
+        sheet.filteringMode = .nearest
+        
+        let cols: CGFloat = 3
+        let rows: CGFloat = 4
+        let frameW = 1.0 / cols
+        let frameH = 1.0 / rows
+        
+        // SpriteKit rect origin (0,0) is bottom-left
+        func extractRow(row: Int) -> [SKTexture] {
+            var frames = [SKTexture]()
+            for col in 0..<Int(cols) {
+                let x = CGFloat(col) * frameW
+                let y = CGFloat(row) * frameH
+                let rect = CGRect(x: x, y: y, width: frameW, height: frameH)
+                let tex = SKTexture(rect: rect, in: sheet)
+                tex.filteringMode = .nearest
+                frames.append(tex)
+            }
+            return frames
+        }
+        
+        // Bottom row of image (Y=0.0 in SpriteKit) is Up
+        let upFrames = extractRow(row: 0)
+        // 3rd row is Right
+        let rightFrames = extractRow(row: 1)
+        // 2nd row is Left
+        let leftFrames = extractRow(row: 2)
+        // Top row is Down
+        let downFrames = extractRow(row: 3)
+        
+        func createWalkAction(frames: [SKTexture]) -> SKAction {
+            // Sequence [LeftStep, Walk/Idle, RightStep, Walk/Idle]
+            let loopFrames = [frames[1], frames[0], frames[1], frames[2]]
+            return SKAction.repeatForever(SKAction.animate(with: loopFrames, timePerFrame: 0.15))
+        }
+        
+        walkAnimations[.up] = createWalkAction(frames: upFrames)
+        walkAnimations[.right] = createWalkAction(frames: rightFrames)
+        walkAnimations[.left] = createWalkAction(frames: leftFrames)
+        walkAnimations[.down] = createWalkAction(frames: downFrames)
+        
+        idleTextures[.up] = upFrames[1]
+        idleTextures[.right] = rightFrames[1]
+        idleTextures[.left] = leftFrames[1]
+        idleTextures[.down] = downFrames[1]
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -58,9 +116,33 @@ class PlayerNode : SKSpriteNode {
         self.physicsBody?.contactTestBitMask = PhysicsCategories.enemy
     }
     
+    func stopMoving() {
+        if currentDirection != .idle {
+            currentDirection = .idle
+            self.removeAction(forKey: "walk")
+            self.texture = idleTextures[lastFacing] ?? self.texture
+        }
+    }
+    
     func move(with velocity: CGPoint){
         self.position.x += velocity.x * currentSpeed
         self.position.y += velocity.y * currentSpeed
+        
+        let newDir: Direction
+        if abs(velocity.x) > abs(velocity.y) {
+            newDir = velocity.x > 0 ? .right : .left
+        } else {
+            newDir = velocity.y > 0 ? .up : .down
+        }
+        
+        if newDir != currentDirection {
+            currentDirection = newDir
+            lastFacing = newDir
+            self.removeAction(forKey: "walk")
+            if let walkAction = walkAnimations[newDir] {
+                self.run(walkAction, withKey: "walk")
+            }
+        }
     }
     
     func takeDamage(_ amount: Int){

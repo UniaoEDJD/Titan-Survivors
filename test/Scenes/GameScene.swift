@@ -58,9 +58,78 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     
     func setupBackground() {
-        let background = SKSpriteNode(color: SKColor.darkGray, size: CGSize(width: 3000, height: 3000))
-        background.zPosition = -1
-        addChild(background)
+        // 1. Create a massive, performant Tile Map for the grass
+        let grassTexture = SKTexture(imageNamed: "grass")
+        grassTexture.filteringMode = .nearest
+        
+        // Scale grass smaller by rendering the texture into a smaller tile size (e.g., 32x32)
+        let grassDefinition = SKTileDefinition(texture: grassTexture, size: CGSize(width: 32, height: 32))
+        let grassGroup = SKTileGroup(tileDefinition: grassDefinition)
+        let tileSet = SKTileSet(tileGroups: [grassGroup])
+        
+        // 300 columns/rows = 9600x9600 playable bounds before reaching the void
+        // This acts functionally infinite for typical run times.
+        let mapCols = 300
+        let mapRows = 300
+        let tileMap = SKTileMapNode(tileSet: tileSet, columns: mapCols, rows: mapRows, tileSize: CGSize(width: 32, height: 32))
+        
+        tileMap.fill(with: grassGroup)
+        tileMap.position = .zero
+        tileMap.zPosition = -10
+        addChild(tileMap)
+        
+        // 2. Add decorations from Vibrant Nature tileset
+        let natureSheet = SKTexture(imageNamed: "Vibrant Nature")
+        natureSheet.filteringMode = .nearest
+        
+        let cols: CGFloat = 16 // 768 width / 48 cell size
+        let rows: CGFloat = 16 // 768 height / 48 cell size
+        let frameW = 1.0 / cols
+        let frameH = 1.0 / rows
+        
+        // Helper to extract cells: col=0, row=0 is TOP-LEFT
+        func getTexture(col: Int, row: Int, widthCells: Int = 1, heightCells: Int = 1) -> SKTexture {
+            let x = CGFloat(col) * frameW
+            let y = 1.0 - CGFloat(row + heightCells) * frameH
+            let w = CGFloat(widthCells) * frameW
+            let h = CGFloat(heightCells) * frameH
+            let rect = CGRect(x: x, y: y, width: w, height: h)
+            return SKTexture(rect: rect, in: natureSheet)
+        }
+        
+        // 3. Extract exact decos requested
+        // Big tree takes grid 0,0 and 0,1. So start at 0,0 and take height of 2 cells.
+        let bigTreeTex = getTexture(col: 0, row: 0, widthCells: 1, heightCells: 2)
+        // Bushes
+        let bushTex1 = getTexture(col: 1, row: 1)
+        let bushTex2 = getTexture(col: 3, row: 0)
+        let bushTex3 = getTexture(col: 3, row: 3)
+        
+        let decorationTemplates = [bigTreeTex, bushTex1, bushTex2, bushTex3]
+        
+        // Scatter roughly 400 decorations over the huge map randomly
+        let bgWidth: CGFloat = CGFloat(mapCols) * 32.0
+        let bgHeight: CGFloat = CGFloat(mapRows) * 32.0
+        
+        for _ in 0..<400 {
+            guard let randomTex = decorationTemplates.randomElement() else { continue }
+            let deco = SKSpriteNode(texture: randomTex)
+            
+            // Adjust visual size since trees are 2 tiles high
+            if randomTex == bigTreeTex {
+                // E.g., make the tree larger in-game representing its 2-cell height
+                deco.size = CGSize(width: 48, height: 96) 
+            } else {
+                deco.size = CGSize(width: 48, height: 48)
+            }
+            
+            let randX = CGFloat.random(in: -bgWidth/2 ... bgWidth/2)
+            let randY = CGFloat.random(in: -bgHeight/2 ... bgHeight/2)
+            
+            deco.position = CGPoint(x: randX, y: randY)
+            deco.zPosition = -5
+            addChild(deco)
+        }
     }
     
     func setupPlayer() {
@@ -87,18 +156,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let yPos = (size.height / 2) - 40
         healthBar.position = CGPoint(x: xPos, y: yPos)
         cameraNode.addChild(healthBar)
-        // 1. Barra de XP
         xpBar = XPBarNode()
         xpBar.zPosition = 100
         cameraNode.addChild(xpBar)
                 
-        // 2. Temporizador (HUD)
         timerLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
         timerLabel.fontSize = 24
         timerLabel.fontColor = .white
         timerLabel.zPosition = 100
                 
-        // Adicionar uma sombra negra ao texto para se ler bem em cima de qualquer fundo!
         let dropShadow = SKLabelNode(fontNamed: "AvenirNext-Heavy")
         dropShadow.fontSize = 24
         dropShadow.fontColor = .black
@@ -108,7 +174,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 
         cameraNode.addChild(timerLabel)
                 
-        // 3. OUVIR O XP
         gameManager.onXpUpdated = { [weak self] current, target in
             self?.xpBar.updateXP(current: current, target: target)
         }
@@ -148,8 +213,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 weapon.update(dt: delta_time, player: player, scene: self, globalDamageMult: upgradeManager.GlobalDamageMult)
             }
         }
-        if joystick.velocity != .zero && !player.isDashing {
-            player.move(with: joystick.velocity)
+        if !player.isDashing {
+            if joystick.velocity != .zero {
+                player.move(with: joystick.velocity)
+            } else {
+                player.stopMoving()
+            }
         }
         
         cameraNode.position = player.position
