@@ -28,8 +28,8 @@ class GameViewController: UIViewController {
                 self?.showLevelUpScreen(with: options)
             }
             
-            scene.requestGameOverUI = { [weak self] (runTime, playerLevel) in
-                self?.showGameOverScreen(time: runTime, level: playerLevel)
+            scene.requestGameOverUI = { [weak self] (runTime, playerLevel, totalDamageDealt) in
+                self?.showGameOverScreen(time: runTime, level: playerLevel, damage: totalDamageDealt)
             }
             
             levelUpView.onUpgradeSelected = { [weak self, weak scene] pickedUpgrade in
@@ -271,10 +271,11 @@ class GameViewController: UIViewController {
                 guard let window = self?.view.window else { return }
                 window.rootViewController = MainMenuViewController()
             }
+            gameOverView.translatesAutoresizingMaskIntoConstraints = false
         }
         
-    private func showGameOverScreen(time: TimeInterval, level: Int) {
-        gameOverView.configureStats(runTime: time, level: level)
+    private func showGameOverScreen(time: TimeInterval, level: Int, damage: Int) {
+        gameOverView.configureStats(runTime: time, level: level, damage: damage)
         gameOverView.isHidden = false
         
         UIView.animate(withDuration: 0.5) {

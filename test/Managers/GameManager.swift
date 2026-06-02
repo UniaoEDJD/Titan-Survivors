@@ -15,11 +15,17 @@ class GameManager{
     private(set) var playerLevel: Int = 1
     private(set) var currentXp: Int = 0
     private(set) var xpToNextLevel: Int = 5
+    private(set) var totalDamageDealt: Int = 0
     
     var onLevelUp: (() -> Void )?
     var onGameOver: (() -> Void)?
     var onVictory: (() -> Void)?
     var onXpUpdated:((Int, Int) -> Void)?
+    
+    func trackDamage(_ amount: Int){
+        guard currentState == .playing else { return }
+        totalDamageDealt += amount
+    }
     
     func update(dt: TimeInterval)
     {

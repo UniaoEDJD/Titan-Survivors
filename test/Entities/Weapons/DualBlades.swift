@@ -81,6 +81,10 @@ class DualBlades: Weapon {
             if distance <= radius {
                 enemyNode.takeDamage(finalDamage)
                 
+                if let gameScene = scene as? GameScene {
+                    gameScene.gameManager.trackDamage(Int(finalDamage))
+                }
+                
                 let pushDx = enemyNode.position.x - player.position.x
                 let pushDy = enemyNode.position.y - player.position.y
                 

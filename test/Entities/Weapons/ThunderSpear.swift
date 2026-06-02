@@ -57,7 +57,7 @@ class ThunderSpears: Weapon {
         for index in 0..<shots {
             let spear = SKSpriteNode(imageNamed: "thunderspear")
             spear.texture?.filteringMode = .nearest
-            spear.size = CGSize(width: 30, height: 8) // Adjust if the projectile looks too fat/thin
+            spear.size = CGSize(width: 30, height: 8)
             spear.position = player.position
 
             let offset = CGFloat(index) - CGFloat(shots - 1) / 2
@@ -106,6 +106,10 @@ class ThunderSpears: Weapon {
             if distance <= explosionRadius {
                  
                     enemy.takeDamage(finalDamage)
+                    
+                    if let gameScene = scene as? GameScene {
+                        gameScene.gameManager.trackDamage(Int(finalDamage))
+                }
                     
                     let pushDistance = max(distance, 1.0)
                     let nx = dx / pushDistance

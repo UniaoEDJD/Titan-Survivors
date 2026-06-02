@@ -20,7 +20,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var requestLevelUpUI: (([UpgradeOption]) -> Void)?
     var healthBar: HealthBarNode!
-    var requestGameOverUI: ((TimeInterval, Int) -> Void)?
+    var requestGameOverUI: ((TimeInterval, Int, Int) -> Void)?
     
     override func didMove(to view: SKView) {
         self.physicsWorld.contactDelegate = self
@@ -46,7 +46,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             self.isPaused = true
             
-            self.requestGameOverUI?(self.gameManager.runTime, self.gameManager.currentXp)
+            self.requestGameOverUI?(self.gameManager.runTime, self.gameManager.currentXp, self.gameManager.totalDamageDealt)
         }
         
         activeWeapons.append(DualBlades(upgradeManager: upgradeManager))
@@ -235,8 +235,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 chunk.position.y -= chunkSize * 3
             }
         }
-        for enemy in objectPool.allEnemies {
-            enemy.update()
+        for enemy in objectPool.allEnemies where !enemy.isHidden {
+                    enemy.update()
+                    
+                    let dx = player.position.x - enemy.position.x
+                    let dy = player.position.y - enemy.position.y
+                    let distance = sqrt((dx * dx) + (dy * dy))
+                    
+                    if distance > 1200 {
+                        let angle = CGFloat.random(in: 0...(2 * .pi))
+                        let newDistance: CGFloat = 700.0
+                        
+                        enemy.position = CGPoint(
+                            x: player.position.x + cos(angle) * newDistance,
+                            y: player.position.y + sin(angle) * newDistance
+                        )
+                }
         }
         
         for node in self.children {
