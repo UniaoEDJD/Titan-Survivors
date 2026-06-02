@@ -8,7 +8,17 @@ class WeaponPickupNode : SKSpriteNode
     {
         self.weaponID = weaponID
         
-        super.init(texture: nil, color: .orange, size: CGSize(width: 30, height: 30))
+        let texture: SKTexture? = (weaponID == "thunderspear") ? SKTexture(imageNamed: "thunderspear") : nil
+        let color: UIColor = (texture == nil) ? .orange : .clear
+        
+        super.init(texture: texture, color: color, size: CGSize(width: 30, height: 30))
+        
+        if let tex = texture {
+            tex.filteringMode = .nearest
+            // If the spear image is long, you can adjust the size proportions here, e.g.:
+            // self.size = CGSize(width: 40, height: 10) 
+        }
+        
         self.position = position
         
         self.name = "pickup_\(weaponID)"

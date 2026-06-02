@@ -15,6 +15,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let playerSpeed: CGFloat = 5.0
     var activeWeapons: [Weapon] = []
     
+    var backgroundChunks: [SKNode] = []
+    let chunkSize: CGFloat = 2048.0
+    
     var requestLevelUpUI: (([UpgradeOption]) -> Void)?
     var healthBar: HealthBarNode!
     var requestGameOverUI: ((TimeInterval, Int) -> Void)?
@@ -58,36 +61,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     
     func setupBackground() {
-        // 1. Create a massive, performant Tile Map for the grass
         let grassTexture = SKTexture(imageNamed: "grass")
         grassTexture.filteringMode = .nearest
         
-        // Scale grass smaller by rendering the texture into a smaller tile size (e.g., 32x32)
         let grassDefinition = SKTileDefinition(texture: grassTexture, size: CGSize(width: 64, height: 64))
         let grassGroup = SKTileGroup(tileDefinition: grassDefinition)
         let tileSet = SKTileSet(tileGroups: [grassGroup])
         
-        // 300 columns/rows = 9600x9600 playable bounds before reaching the void
-        // This acts functionally infinite for typical run times.
-        let mapCols = 300
-        let mapRows = 300
-        let tileMap = SKTileMapNode(tileSet: tileSet, columns: mapCols, rows: mapRows, tileSize: CGSize(width: 32, height: 32))
-        
-        tileMap.fill(with: grassGroup)
-        tileMap.position = .zero
-        tileMap.zPosition = -10
-        addChild(tileMap)
-        
-        // 2. Add decorations from Vibrant Nature tileset
         let natureSheet = SKTexture(imageNamed: "Vibrant Nature")
         natureSheet.filteringMode = .nearest
         
-        let cols: CGFloat = 16 // 768 width / 48 cell size
-        let rows: CGFloat = 16 // 768 height / 48 cell size
+        let cols: CGFloat = 16
+        let rows: CGFloat = 16
         let frameW = 1.0 / cols
         let frameH = 1.0 / rows
         
-        // Helper to extract cells: col=0, row=0 is TOP-LEFT
         func getTexture(col: Int, row: Int, widthCells: Int = 1, heightCells: Int = 1) -> SKTexture {
             let x = CGFloat(col) * frameW
             let y = 1.0 - CGFloat(row + heightCells) * frameH
@@ -97,38 +85,47 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             return SKTexture(rect: rect, in: natureSheet)
         }
         
-        // 3. Extract exact decos requested
-        // Big tree takes grid 0,0 and 0,1. So start at 0,0 and take height of 2 cells.
         let bigTreeTex = getTexture(col: 0, row: 0, widthCells: 1, heightCells: 2)
-        // Bushes
         let bushTex1 = getTexture(col: 1, row: 1)
         let bushTex2 = getTexture(col: 2, row: 0)
         let bushTex3 = getTexture(col: 3, row: 3)
         
         let decorationTemplates = [bigTreeTex, bushTex1, bushTex2, bushTex3]
         
-        // Scatter roughly 400 decorations over the huge map randomly
-        let bgWidth: CGFloat = CGFloat(mapCols) * 32.0
-        let bgHeight: CGFloat = CGFloat(mapRows) * 32.0
+        let mapCols = Int(chunkSize / 64.0)
+        let mapRows = Int(chunkSize / 64.0)
         
-        for _ in 0..<400 {
-            guard let randomTex = decorationTemplates.randomElement() else { continue }
-            let deco = SKSpriteNode(texture: randomTex)
-            
-            // Adjust visual size since trees are 2 tiles high
-            if randomTex == bigTreeTex {
-                // E.g., make the tree larger in-game representing its 2-cell height
-                deco.size = CGSize(width: 48, height: 96) 
-            } else {
-                deco.size = CGSize(width: 48, height: 48)
+        for row in -1...1 {
+            for col in -1...1 {
+                let chunkNode = SKNode()
+                chunkNode.position = CGPoint(x: CGFloat(col) * chunkSize, y: CGFloat(row) * chunkSize)
+                
+                let tileMap = SKTileMapNode(tileSet: tileSet, columns: mapCols, rows: mapRows, tileSize: CGSize(width: 64, height: 64))
+                tileMap.fill(with: grassGroup)
+                tileMap.zPosition = -10
+                chunkNode.addChild(tileMap)
+                
+                for _ in 0..<30 {
+                    guard let randomTex = decorationTemplates.randomElement() else { continue }
+                    let deco = SKSpriteNode(texture: randomTex)
+                    
+                    if randomTex == bigTreeTex {
+                        deco.size = CGSize(width: 48, height: 96)
+                    } else {
+                        deco.size = CGSize(width: 48, height: 48)
+                    }
+                    
+                    let randX = CGFloat.random(in: -chunkSize/2 ... chunkSize/2)
+                    let randY = CGFloat.random(in: -chunkSize/2 ... chunkSize/2)
+                    
+                    deco.position = CGPoint(x: randX, y: randY)
+                    deco.zPosition = -5
+                    chunkNode.addChild(deco)
+                }
+                
+                addChild(chunkNode)
+                backgroundChunks.append(chunkNode)
             }
-            
-            let randX = CGFloat.random(in: -bgWidth/2 ... bgWidth/2)
-            let randY = CGFloat.random(in: -bgHeight/2 ... bgHeight/2)
-            
-            deco.position = CGPoint(x: randX, y: randY)
-            deco.zPosition = -5
-            addChild(deco)
         }
     }
     
@@ -202,7 +199,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let timeString = String(format: "%02d:%02d", minutes, seconds)
         timerLabel.text = timeString
                 
-        // Atualiza a sombra do texto também
         if let shadow = timerLabel.children.first as? SKLabelNode {
             shadow.text = timeString
         }
@@ -222,6 +218,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         cameraNode.position = player.position
+        
+        for chunk in backgroundChunks {
+            let dx = player.position.x - chunk.position.x
+            let dy = player.position.y - chunk.position.y
+            
+            if dx > chunkSize * 1.5 {
+                chunk.position.x += chunkSize * 3
+            } else if dx < -chunkSize * 1.5 {
+                chunk.position.x -= chunkSize * 3
+            }
+            
+            if dy > chunkSize * 1.5 {
+                chunk.position.y += chunkSize * 3
+            } else if dy < -chunkSize * 1.5 {
+                chunk.position.y -= chunkSize * 3
+            }
+        }
         for enemy in objectPool.allEnemies {
             enemy.update()
         }

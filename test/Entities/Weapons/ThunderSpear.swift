@@ -55,9 +55,9 @@ class ThunderSpears: Weapon {
         let flyDistance = distanceToTarget
 
         for index in 0..<shots {
-            let spear = SKShapeNode(rectOf: CGSize(width: 20, height: 4), cornerRadius: 2)
-            spear.fillColor = .gray
-            spear.strokeColor = .orange
+            let spear = SKSpriteNode(imageNamed: "thunderspear")
+            spear.texture?.filteringMode = .nearest
+            spear.size = CGSize(width: 30, height: 8) // Adjust if the projectile looks too fat/thin
             spear.position = player.position
 
             let offset = CGFloat(index) - CGFloat(shots - 1) / 2
