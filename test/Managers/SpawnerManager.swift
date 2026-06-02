@@ -139,6 +139,17 @@ class SpawnerManager{
             
             let boss = TitanBossNode(multiplier: multiplier)
             boss.spawn(at: CGPoint(x: playerPos.x, y: playerPos.y + 800), target: target ?? SKSpriteNode(), multiplier: 1.0)
+            
+            // Defeat boss -> Remove all colossals
+            boss.onDeath = { [weak scene] _ in
+                scene?.enumerateChildNodes(withName: "colossalTitan") { node, _ in
+                    // Add a nice fade out effect before removing
+                    let fade = SKAction.fadeOut(withDuration: 1.0)
+                    let remove = SKAction.removeFromParent()
+                    node.run(SKAction.sequence([fade, remove]))
+                }
+            }
+            
             scene.addChild(boss)
             
             let colossalCount = 140 // Divides nicely into 360 degrees
