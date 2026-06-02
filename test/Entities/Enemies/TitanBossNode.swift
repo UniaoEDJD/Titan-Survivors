@@ -4,12 +4,14 @@ class TitanBossNode: EnemyNode {
     var healthBar: HealthBarNode!
     
     init(multiplier: CGFloat) {
-        super.init(texture: nil, color: .systemYellow, size: CGSize(width: 100, height: 100))
+        let texture = SKTexture(imageNamed: "founding_titan")
+        texture.filteringMode = .nearest
+        super.init(texture: texture, color: .clear, size: CGSize(width: 150, height: 150))
         self.name = "bossTitan"
         
         self.baseMaxHealth = 30000.0 // Extremely tanky
         self.baseDamage = 50.0
-        self.movementSpeed = 1.2
+        self.movementSpeed = 0.6 // Slow, looming threat
         self.xpReward = 1000 // Huge level up on kill
         
         self.maxHealth = self.baseMaxHealth * multiplier

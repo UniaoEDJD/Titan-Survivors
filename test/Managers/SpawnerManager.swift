@@ -142,13 +142,12 @@ class SpawnerManager{
             scene.addChild(boss)
             
             let colossalCount = 140 // Divides nicely into 360 degrees
-            let radiusX: CGFloat = 1600.0 // Wider on the X axis
-            let radiusY: CGFloat = 1000.0 // Shorter on the Y axis
+            let circleRadius: CGFloat = 1500.0 // True circle
             
             for i in 0..<colossalCount {
                 let angle = (CGFloat.pi * 2.0 / CGFloat(colossalCount)) * CGFloat(i)
-                let spawnX = playerPos.x + cos(angle) * radiusX
-                let spawnY = playerPos.y + sin(angle) * radiusY
+                let spawnX = playerPos.x + cos(angle) * circleRadius
+                let spawnY = playerPos.y + sin(angle) * circleRadius
                 
                 let colossal = ColossalTitan()
                 

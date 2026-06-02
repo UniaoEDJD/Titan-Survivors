@@ -69,13 +69,14 @@ class EnemyNode: SKSpriteNode{
         )
     }
     
-    func takeDamage(_ amount: CGFloat){
+    func takeDamage(_ amount: CGFloat) {
         currentHealth -= amount
         
+        let resetBlend = (self.texture == nil) ? 1.0 : 0.0
         let flash = SKAction.sequence([
-                    SKAction.colorize(with: .white, colorBlendFactor: 1.0, duration: 0.05),
-                    SKAction.colorize(with: baseColor, colorBlendFactor: 1.0, duration: 0.05)
-                ])
+            SKAction.colorize(with: .white, colorBlendFactor: 1.0, duration: 0.05),
+            SKAction.colorize(with: baseColor, colorBlendFactor: resetBlend, duration: 0.05)
+        ])
         
         self.run(flash, withKey: "damageFlash")
         

@@ -63,7 +63,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         grassTexture.filteringMode = .nearest
         
         // Scale grass smaller by rendering the texture into a smaller tile size (e.g., 32x32)
-        let grassDefinition = SKTileDefinition(texture: grassTexture, size: CGSize(width: 32, height: 32))
+        let grassDefinition = SKTileDefinition(texture: grassTexture, size: CGSize(width: 64, height: 64))
         let grassGroup = SKTileGroup(tileDefinition: grassDefinition)
         let tileSet = SKTileSet(tileGroups: [grassGroup])
         

@@ -47,10 +47,12 @@ class ColossalTitan: EnemyNode {
     var trapCenter: CGPoint = .zero
     
     init() {
-        super.init(texture: nil, color: .systemOrange, size: CGSize(width: 80, height: 80)) // Massive!
+        let texture = SKTexture(imageNamed: "colossal_titan")
+        texture.filteringMode = .nearest
+        super.init(texture: texture, color: .clear, size: CGSize(width: 120, height: 120)) // Massive!
         self.name = "colossalTitan"
         self.baseMaxHealth = 8000.0
-        self.movementSpeed = 0.5
+        self.movementSpeed = 0.15 // Incredibly slow
         self.baseDamage = 100.0
         self.xpReward = 15
         self.physicsBody?.categoryBitMask = PhysicsCategories.enemy | PhysicsCategories.solidObstacle
@@ -58,14 +60,21 @@ class ColossalTitan: EnemyNode {
     }
     required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
-            override func update(){
-            guard !isHidden else { return }
-                    
-                    let dx = trapCenter.x - self.position.x
-                    let dy = trapCenter.y - self.position.y
-                    
-                    self.physicsBody?.velocity = CGVector(dx: dx * 0.05, dy: dy * 0.05)
+    override func update(){
+        guard !isHidden else { return }
+        
+        let dx = trapCenter.x - self.position.x
+        let dy = trapCenter.y - self.position.y
+        let distance = sqrt(dx * dx + dy * dy)
+        
+        if distance > 0 {
+            // Constant, incredibly slow shrinking
+            let speedPerSecond = self.movementSpeed * 60.0
+            self.physicsBody?.velocity = CGVector(dx: (dx/distance) * speedPerSecond, dy: (dy/distance) * speedPerSecond)
+        } else {
+            self.physicsBody?.velocity = .zero
         }
+    }
     
     override func takeDamage(_ amount: CGFloat) {
         super.takeDamage(amount)
