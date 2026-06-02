@@ -19,6 +19,7 @@ class GameManager{
     var onLevelUp: (() -> Void )?
     var onGameOver: (() -> Void)?
     var onVictory: (() -> Void)?
+    var onXpUpdated:((Int, Int) -> Void)?
     
     func update(dt: TimeInterval)
     {
@@ -41,6 +42,7 @@ class GameManager{
         {
             triggerLevelUp()
         }
+        onXpUpdated?(currentXp, xpToNextLevel)
     }
     
     func triggerLevelUp(){

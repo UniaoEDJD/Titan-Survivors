@@ -4,6 +4,7 @@ class GameOverView: UIView {
     
     var onRestartSelected: (() -> Void)?
     var onQuitSelected: (() -> Void)?
+    private let statsLabel = UILabel()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -29,13 +30,12 @@ class GameOverView: UIView {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(titleLabel)
         
-        let subtitleLabel = UILabel()
-        subtitleLabel.text = "Humanity needs you to fight again."
-        subtitleLabel.font = UIFont(name: "AvenirNext-Medium", size: 18)
-        subtitleLabel.textColor = .lightGray
-        subtitleLabel.textAlignment = .center
-        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(subtitleLabel)
+        statsLabel.font = UIFont(name: "AvenirNext-Medium", size: 20)
+        statsLabel.textColor = .systemYellow // Amarelo para destaque das stats
+        statsLabel.textAlignment = .center
+        statsLabel.numberOfLines = 2 // Permite duas linhas de texto
+        statsLabel.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(statsLabel)
         
         // Buttons
         let restartBtn = createStyledButton(title: "RESTART RUN", color: UIColor(red: 0.6, green: 0.1, blue: 0.1, alpha: 1.0))
@@ -52,13 +52,13 @@ class GameOverView: UIView {
         
         NSLayoutConstraint.activate([
             titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -80),
+            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -140),
             
-            subtitleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
+            statsLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+            statsLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 15),
             
+            stack.topAnchor.constraint(equalTo: statsLabel.bottomAnchor, constant: 40),
             stack.centerXAnchor.constraint(equalTo: centerXAnchor),
-            stack.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 50),
             stack.widthAnchor.constraint(equalToConstant: 280)
         ])
     }
@@ -74,5 +74,13 @@ class GameOverView: UIView {
         btn.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
         btn.heightAnchor.constraint(equalToConstant: 60).isActive = true
         return btn
+    }
+    
+    func configureStats(runTime: TimeInterval, level: Int) {
+        let minutes = Int(runTime) / 60
+        let seconds = Int(runTime) % 60
+        let timeString = String(format: "%02d:%02d", minutes, seconds)
+        
+        statsLabel.text = "SURVIVED: \(timeString)\nLEVEL REACHED: \(level)"
     }
 }

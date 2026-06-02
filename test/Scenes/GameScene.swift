@@ -7,6 +7,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var joystick: VirtualJoystick!
     var objectPool: ObjectPool!
     var spawnManager: SpawnerManager!
+    var xpBar: XPBarNode!
+    var timerLabel: SKLabelNode!
     
     let upgradeManager = UpgradeManager()
     let gameManager = GameManager()
@@ -15,7 +17,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var requestLevelUpUI: (([UpgradeOption]) -> Void)?
     var healthBar: HealthBarNode!
-    var requestGameOverUI: (() -> Void)?
+    var requestGameOverUI: ((TimeInterval, Int) -> Void)?
     
     override func didMove(to view: SKView) {
         self.physicsWorld.contactDelegate = self
@@ -41,7 +43,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             self.isPaused = true
             
-            self.requestGameOverUI?()
+            self.requestGameOverUI?(self.gameManager.runTime, self.gameManager.currentXp)
         }
         
         activeWeapons.append(DualBlades(upgradeManager: upgradeManager))
@@ -85,6 +87,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let yPos = (size.height / 2) - 40
         healthBar.position = CGPoint(x: xPos, y: yPos)
         cameraNode.addChild(healthBar)
+        // 1. Barra de XP
+        xpBar = XPBarNode()
+        xpBar.zPosition = 100
+        cameraNode.addChild(xpBar)
+                
+        // 2. Temporizador (HUD)
+        timerLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
+        timerLabel.fontSize = 24
+        timerLabel.fontColor = .white
+        timerLabel.zPosition = 100
+                
+        // Adicionar uma sombra negra ao texto para se ler bem em cima de qualquer fundo!
+        let dropShadow = SKLabelNode(fontNamed: "AvenirNext-Heavy")
+        dropShadow.fontSize = 24
+        dropShadow.fontColor = .black
+        dropShadow.position = CGPoint(x: 2, y: -2)
+        dropShadow.zPosition = -1
+        timerLabel.addChild(dropShadow)
+                
+        cameraNode.addChild(timerLabel)
+                
+        // 3. OUVIR O XP
+        gameManager.onXpUpdated = { [weak self] current, target in
+            self?.xpBar.updateXP(current: current, target: target)
+        }
     }
         
     func setupJoystick() {
@@ -104,8 +131,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let delta_time = currentTime - lastTime
         lastTime = currentTime
         player.timeLastDash += delta_time
-        
         gameManager.update(dt: delta_time)
+        let minutes = Int(gameManager.runTime) / 60
+        let seconds = Int(gameManager.runTime) % 60
+        let timeString = String(format: "%02d:%02d", minutes, seconds)
+        timerLabel.text = timeString
+                
+        // Atualiza a sombra do texto também
+        if let shadow = timerLabel.children.first as? SKLabelNode {
+            shadow.text = timeString
+        }
         if gameManager.currentState == .playing {
             spawnManager.update(dt: delta_time, runTime: gameManager.runTime, playerPos: player.position)
             
@@ -213,6 +248,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let xPos = -(size.width / 2) + 40
             let yPos = (size.height / 2) - 40
             healthBar.position = CGPoint(x: xPos, y: yPos)
+        }
+        if let xpBar = xpBar {
+            let xPos = -(size.width / 2) + 40
+            let yPos = (size.height / 2) - 65 // Fica imediatamente abaixo da barra de Vida!
+            xpBar.position = CGPoint(x: xPos, y: yPos)
+        }
+        if let timerLabel = timerLabel {
+            // Fica cravado no Topo-Centro do ecrã
+            timerLabel.position = CGPoint(x: 0, y: (size.height / 2) - 50)
         }
     }
     
